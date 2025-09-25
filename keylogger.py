@@ -5,7 +5,7 @@ import threading # to make log sending repeat in background
 from datetime import datetime, timezone # to classify logs by time sent
 
 URL = 'https://0.0.0.0' # the URL/IP to which you want to send the logs to
-INTERVAL = 30.0 # Interval between sending logs (in seconds)
+INTERVAL = 30.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
 
 def send_log(): # send log
     try:
@@ -28,7 +28,7 @@ def send_log(): # send log
                             l.write(line) # rewrite the file, writing only lines of entries which weren't already sent
     except requests.exceptions.RequestException:
         pass
-    threading.Timer(INTERVAL, send_log).start() # start sending logs after the amount of seconds specified in INTERVAL
+    threading.Timer(INTERVAL, send_log).start() # start sending logs again after the amount of seconds specified in INTERVAL
 
 threading.Timer(INTERVAL, send_log).start() # start sending logs after the amount of seconds specified in INTERVAL
 
