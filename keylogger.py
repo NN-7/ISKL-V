@@ -4,7 +4,7 @@ import requests # to send logs
 import threading # to make log sending repeat in background
 from datetime import datetime, timezone # to classify logs by time sent
 
-URL = 'https://127.0.0.1:8000' # the URL/IP to which you want to send the logs to
+URL = 'https://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
 INTERVAL = 3.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
 
 def send_log(): # send log
