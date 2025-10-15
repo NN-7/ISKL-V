@@ -59,5 +59,5 @@ async def handle_zip(request: Request, file: UploadFile = File(...)): # to recie
                 f.write(zip.read(file)) # put the contents of the file in the zip into the file you're making outside of the zip
     os.remove(zip_name) # remove the zip file you went through to avoid clutter
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+uvicorn.run(app, host="0.0.0.0", port=8000)

