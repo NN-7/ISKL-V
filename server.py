@@ -3,9 +3,25 @@ import os # anything related to folders and files
 import mimetypes # to get mimetypes
 from zipfile import ZipFile # to deal with zip files
 from fastapi import FastAPI, Request, UploadFile, File # to make the server work
+from fastapi.responses import FileResponse # to send script zips
 from typing import List # to make file receiving work
+from datetime import datetime, timezone # anything related to classification by time
 
 app = FastAPI() # make the server
+
+zip_location = {'win':'resources/win_scripts.zip',
+                'linux':'resources/linux_scripts.zip',
+                'darwin':'resources/darwin_scripts.zip'}
+
+@app.get("/zip")
+async def scripts_zip(request: Request): # send the script zips
+    headers = request.headers
+    if 'win' in headers['os']:
+        return FileResponse(zip_location, media_type='application/zip', filename=zip_location['win'])
+    elif 'linux' in headers['os']:
+                return FileResponse(zip_location, media_type='application/zip', filename=zip_location['linux'])
+    elif 'darwin' in headers['os']:
+                         return FileResponse(zip_location, media_type='application/zip', filename=zip_location['darwin'])
 
 @app.post("/")
 async def get_files(request: Request, files: List[UploadFile] = File(...)): # to recieve any amount of files of any type
