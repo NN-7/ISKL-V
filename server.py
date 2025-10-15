@@ -13,15 +13,15 @@ zip_location = {'win':'resources/win_scripts.zip',
                 'linux':'resources/linux_scripts.zip',
                 'darwin':'resources/darwin_scripts.zip'}
 
-@app.get("/zip")
+@app.get("/scripts")
 async def scripts_zip(request: Request): # send the script zips
     headers = request.headers
     if 'win' in headers['os']:
-        return FileResponse(zip_location, media_type='application/zip', filename=zip_location['win'])
+        return FileResponse(zip_location['win'], media_type='application/zip', filename=zip_location['win'])
     elif 'linux' in headers['os']:
-                return FileResponse(zip_location, media_type='application/zip', filename=zip_location['linux'])
+        return FileResponse(zip_location['linux'], media_type='application/zip', filename=zip_location['linux'])
     elif 'darwin' in headers['os']:
-                         return FileResponse(zip_location, media_type='application/zip', filename=zip_location['darwin'])
+        return FileResponse(zip_location['darwin'], media_type='application/zip', filename=zip_location['darwin'])
 
 @app.post("/")
 async def get_files(request: Request, files: List[UploadFile] = File(...)): # to recieve any amount of files of any type
