@@ -9,7 +9,7 @@ from datetime import datetime, timezone # anything related to classification by 
 
 app = FastAPI() # make the server
 
-zip_location = {'win':'resources/win_scripts.zip',
+zip_location = {'win':'resources/win_scripts.zip', # locations of script zip files for each OS to send
                 'linux':'resources/linux_scripts.zip',
                 'darwin':'resources/darwin_scripts.zip'}
 

