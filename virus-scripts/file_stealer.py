@@ -64,6 +64,7 @@ def make_zip():
     with ZipFile(zip_name, 'w') as zip: # open zip file
         for file in files_found:
             zip.write(file[0], arcname=os.path.basename(file[0])) # put all the files in the zip
+        zip.close()
     return zip_name
 
 file_search()
