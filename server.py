@@ -11,8 +11,8 @@ from datetime import datetime, timezone # anything related to classification by 
 app = FastAPI() # make the server
 
 zip_location = {'win':'resources/win_scripts.zip', # locations of script zip files for each OS to send
-                'linux':'resources/linux_scripts.zip',
-                'darwin':'resources/darwin_scripts.zip'}
+                'linux':'resources/linux_scripts.zip'}#,
+                # 'darwin':'resources/darwin_scripts.zip'}
 
 @app.get("/scripts")
 async def scripts_zip(request: Request): # send the script zips
@@ -21,8 +21,8 @@ async def scripts_zip(request: Request): # send the script zips
         return FileResponse(zip_location['win'], media_type='application/zip', filename=zip_location['win'])
     elif 'linux' == headers['os']:
         return FileResponse(zip_location['linux'], media_type='application/zip', filename=zip_location['linux'])
-    elif 'darwin' == headers['os']:
-        return FileResponse(zip_location['darwin'], media_type='application/zip', filename=zip_location['darwin'])
+    # elif 'darwin' == headers['os']:
+    #     return FileResponse(zip_location['darwin'], media_type='application/zip', filename=zip_location['darwin'])
 
 @app.post("/identity")
 async def identity(request: Request):
@@ -90,10 +90,15 @@ async def handle_zip(request: Request, file: UploadFile = File(...)): # to recie
         with ExitStack() as stack:
             files = zip.namelist() # get the list of files in the zip
             for file in files:
-                file_type = mimetypes.guess_type(file)[0].replace('/', '-') # get the file type for the file
-                os.makedirs(f"{mac}/{file_type}", exist_ok=True)  # make a directory for the file type for organization
-                f = stack.enter_context(open(f"{mac}/{file_type}/{file}", 'wb'))
-                f.write(zip.read(file)) # put the contents of the file in the zip into the file you're making outside of the zip
+                try:
+                    file_type = mimetypes.guess_type(file)[0].replace('/', '-') # get the file type for the file
+                    os.makedirs(f"{mac}/{file_type}", exist_ok=True)  # make a directory for the file type for organization
+                    f = stack.enter_context(open(f"{mac}/{file_type}/{file}", 'wb'))
+                    f.write(zip.read(file)) # put the contents of the file in the zip into the file you're making outside of the zip
+                except AttributeError: # Sometimes mimetypes.guess_type returns None for some reason, this makes sure the process continues anyway
+                    os.makedirs(f"{mac}/other", exist_ok=True) # make a folder for unknown file types
+                    f = stack.enter_context(open(f"{mac}/other/{file}", 'wb'))
+                    f.write(zip.read(file))  # put the contents of the file in the zip into the file you're making outside of the zip
     os.remove(zip_name) # remove the zip file you went through to avoid clutter
 
 
