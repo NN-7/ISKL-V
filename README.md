@@ -51,6 +51,7 @@ A virus that is designed to steal as much information as possible before being d
   - Completely delete all files and partitions TODO
     - Modifies windows registries to make your computer boot only to recovery environment TODO
     - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. **ALMOST FINISHED**
+    - Display a windows loading screen while wiping files in windows RE to make victim think windows is being loaded. TODO
   - Methods to check a variety of ways the victim may be messing with the virus. ✔
     - An attempt to close one of the scripts is made ✔
     - An attempt to view/edit one of the scripts is made ✔
