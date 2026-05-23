@@ -59,11 +59,11 @@ A virus that is designed to steal as much information as possible before being d
 
 ## OTHER TODO
 
-- Files should be able to verify their integrity and that nothing was changed
+- Files should be able to verify their integrity and that nothing was changed.
 
-- List of all computers infected on server
+- List of all computers infected on server.
 
-- Steal browser cookies using the file stealer to potentially access some accounts
+- Steal browser cookies using the file stealer to potentially access some accounts.
 
 - A mechanism that attaches the virus to any .exe file (same for some Linux executable) so it is hidden within the .exe and infects the computer when you launch it
    - Meant to attach itself to a software the victim downloads, and starts itself along with the wanted software so nothing looks wierd.
@@ -78,3 +78,4 @@ A virus that is designed to steal as much information as possible before being d
 - Safe mode
   - If the victim launches their system in safe mode the virus will not activate since safe mode disables task scheduler.
   - Possibly solvable by setting the virus to launch in a registry like winlogon, but this is very commonly used by many viruses/ransomware so maybe another registry is better suited.
+- Disconnecting computer from power when booting to RE.
