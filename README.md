@@ -9,9 +9,9 @@ Virus
 
 A virus that is designed to steal as much information as possible before being discovered, and delete the victim's system as soon as it is discovered.
 
-> NOTE: This is for educational and testing purposes only! I am very interested in computer viruses and cybersecurity, so I decided to make this project to see what I can do. This is not to be used on any system which does not belong to you and that you are not willing to have ruined. Please only test on VMs. Once completed, running it once means your data is doomed.
+> NOTE: This is for educational and testing purposes only! I am very interested in computer viruses and cybersecurity, so I decided to make this project to see what I can do. This is not to be used on any system which does not belong to you and that you are not willing to have ruined. Please only test on VMs. Once completed, running it once means your data is doomed. By studying/inspecting my program, you agree that you are solely responsible for any damage you caused by being irresponsible. Do not use for wrongdoing. I am not responsible for wrongdoing of others.
 
-
+This project is licensed under the Apache License 2.0. See the LICENSE file for the full text of the license.
 
 ## Features
 
@@ -51,6 +51,7 @@ A virus that is designed to steal as much information as possible before being d
   - Completely delete all files and partitions TODO
     - Modifies windows registries to make your computer boot only to recovery environment TODO
     - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. **ALMOST FINISHED**
+    - Display a windows loading screen while wiping files in windows RE to make victim think windows is being loaded. TODO
   - Methods to check a variety of ways the victim may be messing with the virus. ✔
     - An attempt to close one of the scripts is made ✔
     - An attempt to view/edit one of the scripts is made ✔
@@ -59,11 +60,11 @@ A virus that is designed to steal as much information as possible before being d
 
 ## OTHER TODO
 
-- Files should be able to verify their integrity and that nothing was changed
+- Files should be able to verify their integrity and that nothing was changed.
 
-- List of all computers infected on server
+- List of all computers infected on server.
 
-- Steal browser cookies using the file stealer to potentially access some accounts
+- Steal browser cookies using the file stealer to potentially access some accounts.
 
 - A mechanism that attaches the virus to any .exe file (same for some Linux executable) so it is hidden within the .exe and infects the computer when you launch it
    - Meant to attach itself to a software the victim downloads, and starts itself along with the wanted software so nothing looks wierd.
@@ -78,3 +79,4 @@ A virus that is designed to steal as much information as possible before being d
 - Safe mode
   - If the victim launches their system in safe mode the virus will not activate since safe mode disables task scheduler.
   - Possibly solvable by setting the virus to launch in a registry like winlogon, but this is very commonly used by many viruses/ransomware so maybe another registry is better suited.
+- Disconnecting computer from power when booting to RE.
