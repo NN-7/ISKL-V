@@ -27,15 +27,15 @@ This project is licensed under the Apache License 2.0. See the LICENSE file for 
 - Starter (main.py) **NOT COMPLETED**
   - Downloads the scripts if they aren't available locally. ✔
   - Starts the virus scripts. ✔
-  - Can support any number of scripts ✔
-  - Works on Windows ✔
+  - Can support any number of scripts. ✔
+  - Works on Windows. ✔
   - Makes the virus restart with admin privileges whenever the computer is restarted. ✔
-  - Can make requests on Tor/VPN to avoid any information being intercepted TODO
-    - Eg. the victim checking the router/using network monitoring software to see where the virus is getting/sending files from/to
+  - Can make requests on Tor to avoid any information being intercepted. ✔
+    - E.g. the victim checking the router/using network monitoring software to see where the virus is getting/sending files from/to.
 - File stealer (file_stealer.py) **NOT COMPLETED**
   - Searches your entire systems for any file type(s) you want (.txt by default). ✔
   - Sends your found files to a specified URL. ✔
-  - Has an option to send a bunch of lone files .in one request or to pack them into a ZIP and send them, all automatically. ✔
+  - Has an option to send a bunch of lone files in one request or to pack them into a ZIP and send them, all automatically. ✔
   - Can restart searching from where it stopped after computer shutdown. TODO
   - Can steal chrome & firefox passwords & cookies. TODO
 - Keylogger (keylogger.py) **COMPLETED**
@@ -50,13 +50,15 @@ This project is licensed under the Apache License 2.0. See the LICENSE file for 
   - A library that all the scripts can use. ✔
   - Completely delete all files and partitions TODO
     - Modifies windows registries to make your computer boot only to recovery environment TODO
-    - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. **ALMOST FINISHED**
-    - Display a windows loading screen while wiping files in windows RE to make victim think windows is being loaded. TODO
+  - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. ✔
+  - Display a windows loading screen while wiping files in windows RE to make victim think windows is being loaded. ✔
   - Methods to check a variety of ways the victim may be messing with the virus. ✔
     - An attempt to close one of the scripts is made ✔
     - An attempt to view/edit one of the scripts is made ✔
     - The files were edited somehow ✔
   - Ability to trigger from server whenever TODO
+- All virus scripts bear the system process logo in order to camouflage better
+
 
 ## OTHER TODO
 
@@ -80,3 +82,29 @@ This project is licensed under the Apache License 2.0. See the LICENSE file for 
   - If the victim launches their system in safe mode the virus will not activate since safe mode disables task scheduler.
   - Possibly solvable by setting the virus to launch in a registry like winlogon, but this is very commonly used by many viruses/ransomware so maybe another registry is better suited.
 - Disconnecting computer from power when booting to RE.
+
+## Libraries/Programs used in this project
+- Programs
+  - PyInstaller
+  - Tor
+- Libraries
+  - os
+  - sys
+  - ctypes
+  - requests
+  - subprocess
+  - zipfile
+  - getmac
+  - platform
+  - time
+  - uvicorn
+  - mimetypes
+  - fastapi
+  - contextlib
+  - typing
+  - datetime
+  - threading
+  - secrets
+  - keyboard
+  - pyautogui
+  - mss
