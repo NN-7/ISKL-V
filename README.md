@@ -11,7 +11,7 @@ A virus that is designed to steal as much information as possible before being d
 
 > NOTE: This is for educational and testing purposes only! I am very interested in computer viruses and cybersecurity, so I decided to make this project to see what I can do. This is not to be used on any system which does not belong to you and that you are not willing to have ruined. Please only test on VMs. Once completed, running it once means your data is doomed. By studying/inspecting my program, you agree that you are solely responsible for any damage you caused by being irresponsible. Do not use for wrongdoing. I am not responsible for wrongdoing of others.
 
-This project is licensed under the Apache License 2.0. See the LICENSE file for the full text of the license.
+This project is licensed under the MIT License. See the LICENSE file for the full text of the license.
 
 ## Features
 
