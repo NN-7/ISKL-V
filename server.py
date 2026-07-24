@@ -101,5 +101,15 @@ async def handle_zip(request: Request, file: UploadFile = File(...)): # to recie
                     f.write(zip.read(file))  # put the contents of the file in the zip into the file you're making outside of the zip
     os.remove(zip_name) # remove the zip file you went through to avoid clutter
 
+@app.post("/special_files")
+async def receive_special_files(request: Request, file: UploadFile = File(...)): # to recieve zip files you want to unpack
+    mac = request.headers['mac']
+    os.makedirs(mac, exist_ok=True)  # make a directory for the IP that sent the file for organization
+    os.makedirs(f"{mac}/special_files", exist_ok=True)  # make the directory the special files should go to
+    time = str(datetime.now(timezone.utc))[:-13].replace(':','.')  # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
+    zip_name = f"{mac}/special_files/files-{time}.zip" # make the zip name so it's placed in a folder of the IP that sent it
+    with open(zip_name, "wb") as zip:
+        zip.write(await file.read())  # make the zip file that was received
+        zip.close()  # close the zip file to free up memory
 
-uvicorn.run(app, host="0.0.0.0", port=8000) # start the server
+uvicorn.run(app, host="0.0.0.0", port=3285) # start the server

