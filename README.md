@@ -37,7 +37,7 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
   - Sends your found files to a specified URL. ✔
   - Has an option to send a bunch of lone files in one request or to pack them into a ZIP and send them, all automatically. ✔
   - Can restart searching from where it stopped after computer shutdown. TODO
-  - Can steal chrome & firefox passwords & cookies. TODO
+  - Can steal chrome & firefox passwords & cookies. ✔
 - Keylogger (keylogger.py) **COMPLETED**
   - Logs all key presses and what window was focused when the keys were pressed. ✔
   - Sends a log of the keys logged every specified amount of seconds in the background while new key presses are being logged. ✔
@@ -48,8 +48,8 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
   - Deletes all screenshots sent after the fact so nothing is sent twice. ✔
 - Destruction mechanism (Destroyer.py) **NOT COMPLETED**
   - A library that all the scripts can use. ✔
-  - Completely delete all files and partitions TODO
-    - Modifies windows registries to make your computer boot only to recovery environment TODO
+  - Completely delete all files and partitions ✔
+  - Modifies windows registries to make your computer boot only to recovery environment TODO
   - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. ✔
   - Display a windows loading screen while wiping files in windows RE to make victim think windows is being loaded. ✔
   - Methods to check a variety of ways the victim may be messing with the virus. ✔
@@ -57,19 +57,18 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
     - An attempt to view/edit one of the scripts is made ✔
     - The files were edited somehow ✔
   - Ability to trigger from server whenever TODO
-- All virus scripts bear the system process logo in order to camouflage better
-
+- EXE Bundler (bundler.py) **NOT COMPLETED**
+  - Makes all virus scripts bear the system process logo in order to camouflage better ✔
+  - Bundles additional data into script EXEs ✔
+  - Dynamically allows user to add any other files they want to all scripts or one specific script TODO
+  - Combine starter.py EXE with the target program
+    - Meant to attach itself to a software the victim downloads, and starts itself along with the wanted software so nothing looks wierd. The virus is hidden within the wanted .exe and infects the computer when you launch what you actually wanted.
 
 ## OTHER TODO
 
 - Files should be able to verify their integrity and that nothing was changed.
 
 - List of all computers infected on server.
-
-- Steal browser cookies using the file stealer to potentially access some accounts.
-
-- A mechanism that attaches the virus to any .exe file (same for some Linux executable) so it is hidden within the .exe and infects the computer when you launch it
-   - Meant to attach itself to a software the victim downloads, and starts itself along with the wanted software so nothing looks wierd.
 
 - Think of more things to add.
 
@@ -108,3 +107,5 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
   - keyboard
   - pyautogui
   - mss
+  - tempfile
+  - shutil
