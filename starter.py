@@ -154,7 +154,7 @@ if os.path.exists(started_file): # check if the starter has run before and if yo
     start_scripts()
 else:
     os.makedirs(scripts_direc, exist_ok=True)  # make the directory for the scripts that will be downloaded
-    # destroyer.setup_destroy_mechanism()
+    # destroyer.setup_destroy_mechanism(data)
     get_scripts()
     make_path_list()
     if '.py' in __file__:

