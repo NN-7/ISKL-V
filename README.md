@@ -49,7 +49,7 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
 - Destruction mechanism (Destroyer.py) **NOT COMPLETED**
   - A library that all the scripts can use. ✔
   - Completely delete all files and partitions ✔
-  - Modifies windows registries to make your computer boot only to recovery environment TODO
+  - Modifies windows registries to make your computer boot only to recovery environment ✔
   - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. ✔
   - Display a windows loading screen while wiping files in windows RE to make victim think windows is being loaded. ✔
   - Methods to check a variety of ways the victim may be messing with the virus. ✔
@@ -60,8 +60,8 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
 - EXE Bundler (bundler.py) **NOT COMPLETED**
   - Makes all virus scripts bear the system process logo in order to camouflage better ✔
   - Bundles additional data into script EXEs ✔
-  - Dynamically allows user to add any other files they want to all scripts or one specific script TODO
-  - Combine starter.py EXE with the target program
+  - Dynamically allows user to add any other files they want to their script ✔
+  - Combine starter.py EXE with the target program TODO
     - Meant to attach itself to a software the victim downloads, and starts itself along with the wanted software so nothing looks wierd. The virus is hidden within the wanted .exe and infects the computer when you launch what you actually wanted.
 
 ## OTHER TODO
