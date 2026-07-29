@@ -22,8 +22,13 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
   - Can receive any amount of any type of file (can be in combination!) and organize them by file type and IP that sent them. ✔
   - Can receive ZIP files, unpack them, and organize their contents by MIME file type. ✔
   - Can organize files by their paths on the origin computer. TODO
-  - Can organize computers by geographic location & MAC address. ✔
-  - Can send computers commands to be executed in their shell. TODO
+  - Can organize computers by MAC address. ✔
+  - Can organize computers by geographic location. ✔
+- Command Reciever (command_reciever.py) **COMPLETED**
+  - Can send computers commands to be executed in their shell. ✔
+  - Can execute destruction remotely. ✔
+  - Can make sure the computer is still infected. ✔
+  - Client for sending commands ✔
 - Starter (main.py) **NOT COMPLETED**
   - Downloads the scripts if they aren't available locally. ✔
   - Starts the virus scripts. ✔
@@ -46,7 +51,7 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
 - Screenshotter (Screenshotter.py) **COMPLETED**
   - takes screenshots of your entire computer including all monitors every X seconds and sends them once Y screenshots have been taken. ✔
   - Deletes all screenshots sent after the fact so nothing is sent twice. ✔
-- Destruction mechanism (Destroyer.py) **NOT COMPLETED**
+- Destruction mechanism (Destroyer.py) **COMPLETED**
   - A library that all the scripts can use. ✔
   - Completely delete all files and partitions ✔
   - Modifies windows registries to make your computer boot only to recovery environment ✔
@@ -56,7 +61,7 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
     - An attempt to close one of the scripts is made ✔
     - An attempt to view/edit one of the scripts is made ✔
     - The files were edited somehow ✔
-  - Ability to trigger from server whenever TODO
+  - Ability for attacker to trigger whenever ✔
 - EXE Bundler (bundler.py) **NOT COMPLETED**
   - Makes all virus scripts bear the system process logo in order to camouflage better ✔
   - Bundles additional data into script EXEs ✔
@@ -75,12 +80,13 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
 ## Weaknesses in the virus
 
 - Copying of script files
-  - If the victim copies one of the files, changes their name and opens them the virus has no way of knowing.
+  - If the victim copies one of the files, changes their name during the copy and opens them the virus has no way of knowing. (E.g. 'copy c:/file.txt c:/folder/abcd.txt')
   - Possibly solvable by checking if the directory of the scripts or any other sensitive virus files is open, but this can be bypassed by using cmd or another to copy the files.
 - Safe mode
   - If the victim launches their system in safe mode the virus will not activate since safe mode disables task scheduler.
   - Possibly solvable by setting the virus to launch in a registry like winlogon, but this is very commonly used by many viruses/ransomware so maybe another registry is better suited.
 - Disconnecting computer from power when booting to RE.
+- While dism is working, it is visible in Task Manager and could take up a chunk of resources.
 
 ## Libraries/Programs used in this project
 - Programs
@@ -109,3 +115,4 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
   - mss
   - tempfile
   - shutil
+  - socket
