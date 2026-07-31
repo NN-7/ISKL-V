@@ -51,10 +51,10 @@ This project is licensed under the MIT License. See the LICENSE file for the ful
 - Screenshotter (Screenshotter.py) **COMPLETED**
   - takes screenshots of your entire computer including all monitors every X seconds and sends them once Y screenshots have been taken. ✔
   - Deletes all screenshots sent after the fact so nothing is sent twice. ✔
-- Destruction mechanism (Destroyer.py) **COMPLETED**
+- Destruction mechanism (Destroyer.py) **NOT COMPLETED**
   - A library that all the scripts can use. ✔
-  - Completely delete all files and partitions ✔
-  - Modifies windows registries to make your computer boot only to recovery environment ✔
+  - Completely delete all files and partitions **IN PROGRESS**
+  - Modifies windows registries to make your computer boot only to recovery environment TODO
   - Modifies windows recovery environment to delete and overwrite your drives, making your files unusable. Boots to recovery when it is discovered. ✔
   - Display a windows loading screen while wiping files in windows RE to make victim think windows is being loaded. ✔
   - Methods to check a variety of ways the victim may be messing with the virus. ✔
